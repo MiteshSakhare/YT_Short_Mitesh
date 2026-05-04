@@ -288,6 +288,7 @@ def create_frame_perfect_subtitles(
         ]
         
         # Map segments to detected onsets
+        ass_events = []
         for i, seg in enumerate(segments):
             text = seg.get("text", "")
             start_time = seg.get("start_time", i * 5.0)
@@ -303,19 +304,31 @@ def create_frame_perfect_subtitles(
             
             aligned_end = min(video_duration, aligned_start + duration)
             
-            # Format timing as HH:MM:SS.CC
-            start_str = sec_to_ass(aligned_start)
-            end_str = sec_to_ass(aligned_end)
-            
             # Select style
             style = "Narrator" if character == "narrator" else "Dialogue"
             
-            # Create ASS line
+            ass_events.append({
+                "start": aligned_start,
+                "end": aligned_end,
+                "text": text,
+                "style": style
+            })
+            
+        # Smoothing Window: Merge gaps < 200ms
+        for i in range(len(ass_events) - 1):
+            gap = ass_events[i+1]["start"] - ass_events[i]["end"]
+            if 0 < gap < 0.200:
+                ass_events[i]["end"] = ass_events[i+1]["start"]
+        
+        # Build ASS lines
+        for ev in ass_events:
+            start_str = sec_to_ass(ev["start"])
+            end_str = sec_to_ass(ev["end"])
             ass_line = (
                 f"Dialogue: 0,{start_str},{end_str},"
-                f"{style},,"
+                f"{ev['style']},,"
                 f"0,0,0,,"
-                f"{text}"
+                f"{ev['text']}"
             )
             ass_lines.append(ass_line)
         
@@ -1687,10 +1700,11 @@ def mix_sfx_into_audio(
     for idx, (ts, sfx_path, sfx_type) in enumerate(placements):
         inputs += ["-i", sfx_path]
         input_idx = idx + 1
-        # Delay each SFX to its timestamp, lower volume to 30%
+        # Delay each SFX to its timestamp, use higher volume from config
         delay_ms = int(ts * 1000)
+        sfx_vol = getattr(config, 'SFX_VOLUME', 0.65)
         filter_parts.append(
-            f"[{input_idx}:a]volume=0.3,adelay={delay_ms}|{delay_ms}[sfx{idx}]"
+            f"[{input_idx}:a]volume={sfx_vol},adelay={delay_ms}|{delay_ms}[sfx{idx}]"
         )
 
     # Mix all SFX with the voice without auto-normalizing volume (which crushes voice)
@@ -1876,16 +1890,18 @@ def compose_video(
 
     # ── FILTER GRAPH: AUDIO ───────────────────────────────────────────
     if has_music:
-        wt = str(1 - config.MUSIC_VOLUME)
-        mv = str(config.MUSIC_VOLUME)
-        v_parts.append(f"[{audio_idx}:a]volume={wt}[voice]")
+        mv = str(getattr(config, 'MUSIC_VOLUME', 0.10))
+        # 1. Target -14 LUFS for the master broadcast volume of the TTS
+        v_parts.append(f"[{audio_idx}:a]loudnorm=I=-14:TP=-1.5:LRA=11[voice]")
         v_parts.append(f"[{music_idx}:a]volume={mv}[bgm]")
         v_parts.append(f"[voice]asplit[v1][v2]")
-        v_parts.append(f"[bgm][v2]sidechaincompress=threshold=-15dB:ratio=4:attack=50:release=300[ducked_bgm]")
+        # 2. Sidechaincompress squash the background music when TTS speaks
+        v_parts.append(f"[bgm][v2]sidechaincompress=threshold=-20dB:ratio=6:attack=50:release=300:level_sc=0.8[ducked_bgm]")
         v_parts.append(f"[v1][ducked_bgm]amix=inputs=2:duration=first:dropout_transition=2[final_a]")
         a_map = "[final_a]"
     else:
-        a_map = f"{audio_idx}:a"
+        v_parts.append(f"[{audio_idx}:a]loudnorm=I=-14:TP=-1.5:LRA=11[final_a]")
+        a_map = "[final_a]"
 
     full_fg = "; ".join(v_parts)
 

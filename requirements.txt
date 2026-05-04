@@ -1,7 +1,7 @@
 # YouTube Shorts AI Generator — Dependencies
 # Install: pip install -r requirements.txt
 
-edge-tts>=6.1.0        # Microsoft Edge TTS (free, multi-voice)
+edge-tts>=6.1.0         # Microsoft Edge TTS (free, multi-voice)
 nest-asyncio>=1.5.0     # Enables async in notebooks/scripts
 tqdm>=4.60.0            # Progress bars
 Pillow>=9.0.0           # Image processing (hook overlays)
@@ -14,11 +14,16 @@ python-dotenv>=0.19.0   # Environment variable loading from .env
 kokoro>=0.8.0           # Local neural TTS engine
 torch>=2.0.0            # Kokoro runtime dependency
 
+# AI / LLM Hook rewriting
+ollama>=0.1.0           # Python client for Ollama
+
+# Document and Video Processing
+python-docx>=0.8.11     # Word doc extraction
+colorama>=0.4.6         # Terminal coloring
+moviepy>=1.0.3          # Video/audio joining
+pygame>=2.5.0           # Optional multimedia / internal moviepy dependency
+
 # NOTE: FFmpeg must be installed separately!
 # Windows: winget install ffmpeg   OR  download from https://ffmpeg.org
 # Mac:     brew install ffmpeg
 # Linux:   sudo apt install ffmpeg
-python-docx>=0.8.11
-colorama>=0.4.6
-moviepy>=1.0.3
-pygame>=2.5.0

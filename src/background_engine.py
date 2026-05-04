@@ -797,7 +797,7 @@ def _crossfade_concat(
             )
 
         if n == 1:
-            filter_parts.append(f"[v_norm_0]fade=t=out:st={max(0.1, total_duration - 1.0):.3f}:d=1.0[vout]")
+            filter_parts.append(f"[v_norm_0]setsar=1/1,format=yuv420p[vout]")
         else:
             # The xfade filter takes 'offset' as the time relative to the START of the FIRST input.
             # When chaining, each new clip adds (duration - FADE_DUR) to the total timeline.

@@ -52,8 +52,8 @@ WATERMARK_MARGIN = 40
 SHOW_PART_TAG = True           # Show "PART X" tag at top-right
 PART_TAG_DURATION = 5.0        # Stay on screen for 5s
 SHOW_CTA_OVERLAY = True        # Show "Follow for Part X+1" at end
-CTA_DURATION = 4.0             # End-screen duration
-CTA_TEXT = "Follow for Part {next_part} 🚀"
+CTA_DURATION = 5.0             # End-screen duration
+CTA_TEXT = "What happens next? \nSubscribe for Part {next_part}!"
 
 # ─────────────────────────────────────────────────────────────
 #  CHANNEL & LOGGING SETTINGS
@@ -333,7 +333,7 @@ PEXELS_SEARCH_TERMS = {
 #  SOUND EFFECTS (Mood-based)
 # ─────────────────────────────────────────────────────────────
 MOOD_SFX_ENABLED = True
-SFX_VOLUME = 0.15               # SFX mix volume (0.0-1.0)
+SFX_VOLUME = 0.65               # 🔊 INCREASED heavily to ensure they are clearly heard (0.0-1.0)
 
 # Transition SFX between scene changes
 TRANSITION_SFX_ENABLED = True

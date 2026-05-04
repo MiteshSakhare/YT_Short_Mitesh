@@ -48,6 +48,9 @@ sfx/*.wav
 *.log
 logs/
 scratch/
+ffmpeg.exe
+ffprobe.exe
+ffplay.exe
 
 # OS
 .DS_Store

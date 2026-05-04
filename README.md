@@ -41,28 +41,75 @@ YT/
 └── requirements.txt              # Python dependencies
 ```
 
-## Quick Start
+## 🚀 Step-by-Step Setup Guide
 
-### 1. Setup
+### 1. Prerequisites
+- **Python 3.10+** (Install from python.org)
+- **FFmpeg**: Required for media processing.
+  - Windows: `winget install ffmpeg`
+  - Mac: `brew install ffmpeg`
+  - Linux: `sudo apt install ffmpeg`
+
+### 2. Virtual Environment Setup
+It is highly recommended to run this project inside a virtual environment to avoid dependency conflicts.
 ```bash
-.\venv\Scripts\Activate.ps1
+# Create Virtual Environment
+python -m venv .kokoro_venv
+
+# Activate Virtual Environment
+# Windows:
+.\.kokoro_venv\Scripts\Activate.ps1
+# Mac/Linux:
+source .kokoro_venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Split Story (if starting from DOCX)
-```bash
-python tools/split_story.py
-```
+### 4. Setup Kokoro (Local TTS)
+Kokoro is the local neural TTS engine for emotional voice rendering.
+- Ensure the `models/` directory exists.
+- Download `kokoro-v1.0.onnx` and `voices.bin` (or similar necessary Kokoro weights) and place them in the `models/` folder.
 
-### 3. Generate One Video
-```bash
-python src/generate_short.py input/part_0001.txt
-```
+### 5. Setup Ollama (Local AI Hook Rewriter)
+Ollama runs lightweight LLMs locally for psychological hook analysis and dialogue selection without API costs.
+- Download and install [Ollama](https://ollama.com/).
+- Start the Ollama server: `ollama serve` (or let it run in the background).
+- Pull the required model: `ollama pull llama3.2:3b`
 
-### 4. Batch Generate
-```bash
-python tools/batch_generate.py
-python tools/batch_generate.py --start 10 --end 20  # Range mode
+### 6. Configuration (.env)
+Create a `.env` file based on `.env.example` (or use the existing one) and fill in your keys:
+- `PEXELS_API_KEY`: Get a free key from Pexels for background video fetching.
+- `OLLAMA_URL`: Typically `http://localhost:11434`
+
+## 🏗️ Architecture & Flow
+
+### System Architecture
+The system is built as a modular pipeline where each step passes data to the next via temporary files and in-memory structures:
+1. **Input Parser**: Reads script/story text (e.g., `part_0001.txt`).
+2. **Psychology Engine (Ollama)**: Analyzes text, extracts high-tension dialogue, and selects the best hooks.
+3. **TTS Engine (Kokoro & Edge-TTS)**: Generates character-specific audio using the `kokoro_worker.py` for persistent, fast inference.
+4. **Mood & SFX Engine**: Detects emotional tone (tense, calm, scary) and layers appropriate sound effects.
+5. **Background Engine**: Fetches and caches contextual Pexels stock footage or generates procedural backgrounds.
+6. **Subsync & Video Processor**: `librosa` maps audio syllables, generating strict exact SRT/ASS subtitle files. FFmpeg compiles video, audio, SFX, overlays, and text into the final MP4.
+
+### Generation Workflow
+```mermaid
+graph TD
+    A[Input Text] --> B(Story/Hook Analysis)
+    B --> C{Psychology Engine}
+    C --> D[Dialogue & Narration Extraction]
+    D --> E[Kokoro TTS Audio]
+    E --> F[Mood Detection & SFX]
+    B --> G[Background Video Retrieval]
+    E --> H[Syllable Sync Tracking]
+    F --> I[Audio Mixing & Ducking]
+    G --> J[FFmpeg Video Render]
+    H --> J
+    I --> J
+    J --> K([Final output/part_N/final_short.mp4])
 ```
 
 ## 🚀 Step-by-Step Generation Guide
