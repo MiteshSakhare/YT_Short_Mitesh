@@ -318,15 +318,15 @@ PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "")
 
 # Mood → Pexels search terms
 PEXELS_SEARCH_TERMS = {
-    "dark":     ["dark forest mist cinematic", "storm clouds time lapse", "dark ocean aerial", "ancient dark ruins architecture", "obsidian castle night"],
-    "gloomy":   ["misty forest fog", "rainy gloomy mountains", "overcast desolate landscape", "foggy mysterious valley"],
-    "sad":      ["rain on glass cinematic", "gloomy towering mountains", "foggy landscape cinematic", "dark nature aerial", "solitary throne stone"],
-    "thrill":   ["lightning strike slow motion", "fast moving clouds cinematic", "flowing river dark", "crimson energy abstract"],
-    "happy":    ["golden hour nature drone", "sunlight through tall trees cinematic", "clear blue sky time lapse", "majestic architecture cinematic"],
-    "epic":     ["epic mountain peaks aerial", "ancient castle fortress drone", "dramatic sunset clouds time lapse", "majestic architecture cinematic", "silver dragon flying"],
-    "surprise": ["lightning storm cinematic nature", "light rays through clouds", "fast moving river nature", "black hole void abstract"],
-    "mystery":  ["fog thick forest night", "dark architecture tunnel", "misty lake majestic aerial", "ancient scroll candle light"],
-    "neutral":  ["beautiful nature landscape cinematic", "majestic drone view mountains", "ancient architecture aerial"],
+    "dark":     ["dark obsidian fortress cinematic", "black stone castle", "dark underground chamber glowing", "shadowy gothic corridor", "silver flame brazier night"],
+    "gloomy":   ["misty desolate borderlands", "ash and thorn landscape", "gloomy gothic courtyard fog", "dark clouded sky over ruins"],
+    "sad":      ["solitary throne stone empty", "abandoned dark ruins aerial", "frozen ocean abstract ice", "cold frost spreading on window"],
+    "thrill":   ["magical black light energy abstract", "clashing swords fantasy cinematic", "burning castle dark fantasy", "celestial silver light burst"],
+    "happy":    ["warm candlelight mahogany room", "sunrise over medieval academy", "golden hour fantasy courtyard", "peaceful medieval garden fountain"],
+    "epic":     ["epic black and white stone academy aerial", "dark fantasy battleground storm", "glowing magic crystal obelisk", "majestic stained glass dome sunlight"],
+    "surprise": ["shattering ice magical abstract", "burst of silver and black light", "sudden frost spreading cinematic", "glowing runes dark stone"],
+    "mystery":  ["ancient dusty library candlelight scrolls", "underground stone ritual chamber", "misty borderlands fantasy", "faded magical wards glowing"],
+    "neutral":  ["spire academy white marble black stone", "gothic medieval architecture", "elegant mahogany study interior"],
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -403,7 +403,9 @@ ALLOWED_BACKGROUND_KEYWORDS = [
     "ethereal", "fantasy", "scenery", "aerial", "drone", "mana",
     "sparkle", "glowing", "portal", "rune", "arcane", "spell", "enchanted",
     "gothic", "medieval", "vintage", "mahogany", "candlelight", "shadows", "obsidian",
-    "incense", "smoke curls", "crystal", "chandelier", "dust", "parchment", "scroll"
+    "incense", "smoke curls", "crystal", "chandelier", "dust", "parchment", "scroll",
+    "ash", "thorn", "obelisk", "brazier", "stained glass", "silver flame", "black stone",
+    "white marble", "borderlands", "tunnels", "parapet", "battlements", "siege engine", "banners"
 ]
 
 # Blacklist: Strictly remove modern/unrelated content
@@ -416,23 +418,25 @@ BLACKLIST_BACKGROUND_KEYWORDS = [
     "bicycle", "motorcycle", "asphalt", "skyscraper", "electricity", "wires",
     "vehicle", "automobile", "highway", "billboard", "gadget", "electronics",
     "crowd", "audience", "group of people", "classroom kids", "modern school",
-    "jeans", "suit", "sneakers", "t-shirt", "wrist watch"
+    "jeans", "suit", "sneakers", "t-shirt", "wrist watch", "guns", "firearms", 
+    "hospital", "modern clinic", "modern courtroom"
 ]
 
 # Location-to-Visual Mappings for story consistency
 LOCATION_KEYWORDS = {
     "azure pavilion": "elegant blue silk pavillion garden",
     "silver academy": "gothic medieval academy stone building",
-    "academy": "ancient library stone classroom fantasy",
+    "academy": "grand black stone and white marble gothic academy aerial",
+    "spire academy": "grand black stone and white marble gothic academy aerial",
     "obsidian fortress": "dark black stone castle fortress ominous",
     "celestial church": "grand cathedral stained glass mystical",
     "dark continent": "wasteland volcanic landscape dark mountains",
     "throne room": "majestic medieval throne room gold mahogany",
-    "library": "vast ancient library bookshelves candlelight",
+    "library": "ancient dusty library scrolls thick tomes candlelight",
     "mahogany": "dark vintage wood interior luxury",
     "chamber": "stone chamber torches shadows mystery",
     "battlefield": "foggy desolate field dawn cinematic",
-    "mahogany room": "dark mahogany wood luxury room",
+    "mahogany room": "polished mahogany interior crystal chandeliers luxury",
     "chandelier": "luxurious crystal chandelier lighting hall",
     "dragomir": "fortified medieval manor mansion winter",
     "imperial city": "ancient stone city gates medieval street",
@@ -440,7 +444,6 @@ LOCATION_KEYWORDS = {
     "ducal garden": "blooming medieval garden fountain flowers",
 
     # ── Kaelen's Past & The Betrayal ──
-    "obsidian fortress": "dark jagged stone castle stormy sky",
     "demon realm": "volcanic ash landscape dark sky",
     "dark throne": "ancient empty dark throne room stone",
     "holy sword": "sunlight breaking through dark clouds cinematic nobody",
@@ -449,19 +452,25 @@ LOCATION_KEYWORDS = {
     "blinding white": "abstract ethereal white light clouds",
     "manor": "grand ancient medieval mansion exterior",
     "estate": "beautiful vast medieval estate gardens",
-    "study": "ancient dusty library old books candle light",
+    "study": "elegant mahogany study interior",
     
     # ── The Magic Academy (Interiors) ──
     "classroom": "ancient empty gothic classroom wood desks",
     "hallway": "dark stone castle corridor arches",
     "dormitory": "simple medieval stone room window light",
     "dining hall": "grand long wooden table medieval feast hall",
+    "healers wing": "white marble floors glowing braziers clean fantasy",
+    "demon common hall": "dark wood interior crimson velvet cold blue flame braziers",
+    "tribunal chamber": "perfect circle black and white stone tiered seating stained glass dome",
+    "ritual chamber": "dark underground stone chamber faded glowing wards dust",
+    "vex'ahlia chambers": "sparse white stone room silver light arched window",
     
     # ── The Magic Academy (Exteriors) ──
     "courtyard": "ancient stone courtyard gothic architecture",
-    "training ground": "empty medieval dirt training yard weapons",
+    "training ground": "medieval stone courtyard combat arena",
     "arena": "ancient roman colosseum ruins sand",
     "gates": "massive iron gates ancient castle entrance",
+    "mana weaving arena": "underground circular stone arena glowing crystal obelisk",
     
     # ── Nature & The Borderlands ──
     "dark forest": "creepy dark misty pine forest trees",
@@ -470,7 +479,8 @@ LOCATION_KEYWORDS = {
     "valley": "beautiful green valley river landscape",
     "river": "fast flowing dark river nature landscape",
     "waterfall": "epic tall waterfall jungle nature",
-    "borderlands": "desolate barren wasteland landscape stormy",
+    "borderlands": "desolate ash and thorn wasteland dark sky",
+    "blackthorn fortress": "black stone fortress rising from ash dark fantasy",
     "cave": "dark mysterious underground cave tunnel",
     "ruins": "ancient forgotten stone temple ruins overgrown",
     
@@ -481,9 +491,9 @@ LOCATION_KEYWORDS = {
     "golden throne": "luxurious golden throne room bright light",
     "cathedral": "massive gothic church interior stained glass",
     "sanctuary": "peaceful holy temple interior sunlight",
+    "church quarter": "white stone architecture silver light celestial statues",
     
     # ── Story Specifics (The Twice-Crowned King) ──
-    "silver academy": "grand white stone magical academy architecture aerial",
     "frozen ocean": "epic glacier ice ocean dark sky magical ethereal",
     "mana": "swirling magical energy particles glowing ethereal",
     "sealed soul": "dark abstract cage glowing magical energy",
@@ -499,7 +509,6 @@ LOCATION_KEYWORDS = {
     "black mana": "glowing black magical energy particles dark atmosphere",
     "inquisitor": "dark hooded figure silhouette ancient chamber",
     "celestial calendar": "ancient clockwork astronomical device glowing light",
-    "ritual chamber": "dark stone chamber glowing runes floor",
     "ancient library": "massive gothic library tower books dust sunlight",
     "snowy walls": "ancient stone walls heavy snow winter sunset"
 }
@@ -626,5 +635,3 @@ def get_font_path(font_name="impact"):
                     
     # Fallback: Just return the name and hope FFmpeg/PIL can find it globally
     return search_files[0]
-
-

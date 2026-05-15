@@ -1971,33 +1971,36 @@ def generate_video_metadata(part_num: int, hook_text: str, segments: list, outpu
         hashtags = [
             "#TheTwiceCrownedKing",
             f"#Part{part_num}",
-            "#FantasyStories",
-            "#ShortsStory",
-            "#Reincarnation",
+            "#FantasyShorts",
+            "#Audiobook",
             "#EpicFantasy",
+            "#StoryTime",
             "#ViralShorts"
         ]
         
         if mood.lower() == "sad":
-            hashtags.extend(["#Emotional", "#Tragedy"])
+            hashtags.extend(["#Emotional", "#Tragedy", "#Heartbreak"])
         elif mood.lower() == "epic":
-            hashtags.extend(["#Action", "#Cinematic"])
+            hashtags.extend(["#Action", "#Cinematic", "#Power"])
         elif mood.lower() == "dark":
-            hashtags.extend(["#DarkFantasy", "#Mystery"])
+            hashtags.extend(["#DarkFantasy", "#Mystery", "#Betrayal"])
             
         description = f"""✨ {title}
 
+🎧 Best experienced with headphones.
+
 {hook_text}
 
-{summary}
+📖 {summary}
 
-Will the Twice-Crowned King reclaim his glory or fall to the shadows once more? 👑
+Will the Twice-Crowned King reclaim his glory or fall to the shadows once more?
+Follow his journey and watch the full series on our channel! 🚀
 
-Watch the full series on our channel! 🚀
+Hit that Subscribe button so you don't miss the next part! ⚔️👑
 
 { " ".join(hashtags) }
 
-#Storytelling #FantasyWorld #King #Betrayal
+#Storytelling #FantasyWorld #King #Betrayal #Shorts
 """
         
         metadata = {

@@ -639,7 +639,7 @@ def generate_scene_backgrounds(
 
     # ── Step 2: Allocate durations (proportional + xfade overhead) ──
     n = len(groups)
-    FADE_DUR = 0.8
+    FADE_DUR = getattr(config, 'SCENE_TRANSITION_DUR', 1.2)
 
     for i, g in enumerate(groups):
         base = max(2.5, total_duration * (g["word_count"] / total_words))
@@ -655,18 +655,28 @@ def generate_scene_backgrounds(
     used_video_ids: set = set()
     first_clip_raw = None
 
+    # Determine max duration needed for the looping first clip
+    loop_clip_dur = groups[0]["duration"]
+    if len(groups) > 1:
+        loop_clip_dur = max(groups[0]["duration"], groups[-1]["duration"])
+
     for i, group in enumerate(groups):
         clip_path = str(config.TEMP_DIR / f"scene_bg_{i:03d}.mp4")
         mood      = group["mood"]
-        dur       = group["duration"]
+        
+        # Override duration for start/end loop clip
+        if i == 0 or i == len(groups) - 1:
+            dur = loop_clip_dur
+        else:
+            dur = group["duration"]
+            
         txt       = group.get("text", "").lower()
 
-        # 🔄 LOOP EFFECT: Force last clip to be exact same as first clip
-        if i == len(groups) - 1 and len(groups) > 1 and first_clip_raw is not None:
-            if _prepare_pexels_video(first_clip_raw, dur, clip_path):
-                clip_paths.append(clip_path)
-                logger.info(f"   [{i+1}] 🔁 LOOP CLIP: Matching first clip for seamless loop")
-                continue
+        # 🔄 LOOP EFFECT: Re-use exact same generated scene_bg_000.mp4
+        if i == len(groups) - 1 and len(groups) > 1 and len(clip_paths) > 0:
+            clip_paths.append(clip_paths[0])
+            logger.info(f"   [{i+1}] 🔁 LOOP CLIP: Reusing exactly scene_bg_000.mp4 for seamless start/end match")
+            continue
 
         if config.PEXELS_API_KEY:
             quality_suffix = "4k hd cinematic scenery nobody"
