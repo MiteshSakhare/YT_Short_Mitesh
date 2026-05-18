@@ -42,6 +42,7 @@ CLIFFHANGER_ENDS = re.compile(
 
 # Patterns that mark chapter / section headers (skip from TTS)
 CHAPTER_HEADER = re.compile(r'^(Part\s+\d+|Chapter\s+\d+|═+|─+|\*\*\*)', re.IGNORECASE)
+END_MARKER = re.compile(r'(?i)^end\s+of\s+part\s+\d+.*$', re.IGNORECASE)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -103,7 +104,10 @@ def main():
         current_words = 0
 
     for para in all_paras:
-        # ── Skip chapter headers ──────────────────────────────
+        # ── Skip chapter headers and end markers ──────────────
+        if END_MARKER.match(para):
+            continue
+            
         if CHAPTER_HEADER.match(para):
             # Flush current accumulation before new chapter
             if current_words >= MIN_WORDS:
@@ -163,14 +167,14 @@ def main():
     total = sum(s['words'] for s in shorts)
     cliffhangers = sum(1 for s in shorts if s['reason'] == 'cliffhanger_beat')
 
-    print(f"\n{'='*60}")
-    print(f"✅ Context-aware split complete")
+    print("\n" + "="*60)
+    print("✅ Context-aware split complete")
     print(f"   Total Shorts : {len(shorts)}")
     print(f"   Avg words    : {avg}")
     print(f"   Total words  : {total:,}")
     print(f"   Cliffhangers : {cliffhangers} Shorts end on dramatic beat")
-    print(f"{'='*60}")
-    print(f"\nNext: python batch_generate.py  (or range test with part_0001.txt)")
+    print("="*60)
+    print("\nNext: python batch_generate.py  (or range test with part_0001.txt)")
 
 
 if __name__ == "__main__":

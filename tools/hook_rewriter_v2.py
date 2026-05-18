@@ -15,7 +15,7 @@ import time
 if sys.stdout.encoding.lower() != 'utf-8':
     try:
         sys.stdout.reconfigure(encoding='utf-8')
-    except:
+    except (AttributeError, OSError):
         pass
 
 INPUT_DIR = Path('input')
@@ -29,7 +29,7 @@ def check_ollama_server():
     try:
         response = requests.get('http://localhost:11434/', timeout=5)
         return True
-    except:
+    except (requests.ConnectionError, requests.Timeout, OSError):
         return False
 
 

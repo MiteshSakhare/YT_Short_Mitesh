@@ -1,29 +1,32 @@
 # 🎬 YouTube Shorts Generator — Snippet Stories
 
-Automated YouTube Short generator for **"The Twice-Crowned King"** dark fantasy series.
+Automated YouTube Shorts generator for **"The Twice-Crowned King"** — a 192-part dark fantasy series.
+
+> A Demon Emperor betrayed and reborn must survive an academy where humans, demons, and the Church wage a secret war.
 
 ## Project Structure
 
 ```
-YT/
+YT_Shorts/
 ├── src/                          # Core pipeline source code
 │   ├── __init__.py               # Package init
-│   ├── generate_short.py         # ★ Main pipeline orchestrator
+│   ├── generate_short.py         # ★ Main pipeline orchestrator (11-step)
 │   ├── config.py                 # All configuration & tuning knobs
-│   ├── background_engine.py      # Pexels API + procedural backgrounds
+│   ├── background_engine.py      # Pexels API + procedural backgrounds (Tier 0-3)
+│   ├── psychology_engine.py      # Hook selection & open-loop optimization
 │   ├── sfx_engine.py             # Mood-based sound effect generation
 │   ├── mood_detector.py          # Keyword-based mood classification
 │   ├── audio_processor.py        # Character FX, normalization, ducking
-│   ├── subtitle_sync.py          # Frame-perfect ASS subtitle sync
+│   ├── subtitle_sync.py          # Frame-perfect ASS subtitle sync (librosa)
 │   ├── local_tts.py              # Kokoro TTS integration (emotional voices)
 │   ├── kokoro_worker.py          # Persistent Kokoro model worker
 │   ├── error_handler.py          # Error handling utilities
 │   └── verify_dependencies.py    # Dependency checking utilities
 │
 ├── tools/                        # Utility & batch scripts
-│   ├── batch_generate.py         # Generate all parts in sequence
+│   ├── batch_generate.py         # Parallel batch generation (ThreadPoolExecutor)
 │   ├── split_story.py            # Split DOCX → input parts
-│   ├── hook_rewriter.py          # AI hook rewriter (Ollama)
+│   ├── hook_rewriter_v2.py       # AI hook rewriter (Ollama)
 │   └── verify_system.py          # System verification
 │
 ├── assets/                       # Brand assets
@@ -32,7 +35,7 @@ YT/
 │   └── profile.png               # Channel profile photo
 │
 ├── input/                        # Script input files (part_0001.txt, ...)
-├── output/                       # Generated videos & metadata
+├── output/                       # Generated videos & metadata (part_001/, part_002/, ...)
 ├── sfx/                          # Generated sound effects cache
 ├── story/                        # Source DOCX story file
 ├── docs/                         # Documentation & original assets
@@ -41,7 +44,7 @@ YT/
 └── requirements.txt              # Python dependencies
 ```
 
-## 🚀 Step-by-Step Setup Guide
+## 🚀 Quick Start
 
 ### 1. Prerequisites
 - **Python 3.10+** (Install from python.org)
@@ -51,16 +54,15 @@ YT/
   - Linux: `sudo apt install ffmpeg`
 
 ### 2. Virtual Environment Setup
-It is highly recommended to run this project inside a virtual environment to avoid dependency conflicts.
 ```bash
 # Create Virtual Environment
-python -m venv .kokoro_venv
+python -m venv venv
 
 # Activate Virtual Environment
 # Windows:
-.\.kokoro_venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 # Mac/Linux:
-source .kokoro_venv/bin/activate
+source venv/bin/activate
 ```
 
 ### 3. Install Dependencies
@@ -71,111 +73,85 @@ pip install -r requirements.txt
 ### 4. Setup Kokoro (Local TTS)
 Kokoro is the local neural TTS engine for emotional voice rendering.
 - Ensure the `models/` directory exists.
-- Download `kokoro-v1.0.onnx` and `voices.bin` (or similar necessary Kokoro weights) and place them in the `models/` folder.
+- Download `kokoro-v1.0.onnx` and `voices.bin` and place them in `models/`.
 
 ### 5. Setup Ollama (Local AI Hook Rewriter)
-Ollama runs lightweight LLMs locally for psychological hook analysis and dialogue selection without API costs.
+Ollama runs lightweight LLMs locally for psychological hook analysis.
 - Download and install [Ollama](https://ollama.com/).
-- Start the Ollama server: `ollama serve` (or let it run in the background).
+- Start the Ollama server: `ollama serve`
 - Pull the required model: `ollama pull llama3.2:3b`
 
 ### 6. Configuration (.env)
-Create a `.env` file based on `.env.example` (or use the existing one) and fill in your keys:
-- `PEXELS_API_KEY`: Get a free key from Pexels for background video fetching.
+Create a `.env` file and fill in your keys:
+- `PEXELS_API_KEY`: Get a free key from [Pexels](https://www.pexels.com/api/) for background video fetching.
 - `OLLAMA_URL`: Typically `http://localhost:11434`
 
 ## 🏗️ Architecture & Flow
 
-### System Architecture
-The system is built as a modular pipeline where each step passes data to the next via temporary files and in-memory structures:
-1. **Input Parser**: Reads script/story text (e.g., `part_0001.txt`).
-2. **Psychology Engine (Ollama)**: Analyzes text, extracts high-tension dialogue, and selects the best hooks.
-3. **TTS Engine (Kokoro & Edge-TTS)**: Generates character-specific audio using the `kokoro_worker.py` for persistent, fast inference.
-4. **Mood & SFX Engine**: Detects emotional tone (tense, calm, scary) and layers appropriate sound effects.
-5. **Background Engine**: Fetches and caches contextual Pexels stock footage or generates procedural backgrounds.
-6. **Subsync & Video Processor**: `librosa` maps audio syllables, generating strict exact SRT/ASS subtitle files. FFmpeg compiles video, audio, SFX, overlays, and text into the final MP4.
-
-### Generation Workflow
+### 11-Step Pipeline
 ```mermaid
 graph TD
-    A[Input Text] --> B(Story/Hook Analysis)
-    B --> C{Psychology Engine}
-    C --> D[Dialogue & Narration Extraction]
-    D --> E[Kokoro TTS Audio]
-    E --> F[Mood Detection & SFX]
-    B --> G[Background Video Retrieval]
-    E --> H[Syllable Sync Tracking]
-    F --> I[Audio Mixing & Ducking]
-    G --> J[FFmpeg Video Render]
-    H --> J
-    I --> J
-    J --> K([Final output/part_N/final_short.mp4])
+    A[Input Text] --> B(Script Parsing)
+    B --> C[Mood Detection]
+    C --> D[SFX Preparation]
+    D --> E[Kokoro/Edge TTS]
+    E --> F[SFX Mixing + Voice Boost]
+    E --> G[Loop Bridge]
+    G --> H[Subtitle Generation]
+    C --> I[Background Video]
+    B --> J[Psychology Hook]
+    J --> K[Thumbnail]
+    C --> L[Ambient Music]
+    H --> M[FFmpeg Composition]
+    I --> M
+    F --> M
+    L --> M
+    K --> M
+    M --> N[Loop Transition]
+    N --> O[Metadata Generation]
+    O --> P([output/part_NNN/short_part_NNN.mp4])
 ```
 
-## 🚀 Step-by-Step Generation Guide
+### Key Technical Details
+| Component | Technology | Notes |
+|---|---|---|
+| **TTS** | Kokoro-ONNX + Edge-TTS | Multi-character voices with emotional prosody |
+| **Subtitles** | librosa onset detection | Frame-perfect word-level sync |
+| **Backgrounds** | Pexels API + FFmpeg procedural | Dark fantasy keyword whitelist |
+| **Audio Mix** | FFmpeg amix + volume boost | Voice pre-boosted to prevent 1/N attenuation |
+| **Hooks** | Psychology Engine | Selects highest-intensity sentence from story middle |
+| **Video** | FFmpeg filter_complex | Single-pass: subtitles + watermark + CTA + progress bar |
+| **Output** | H.264 High 4.2, 30 FPS | YouTube Shorts optimized, ~10-20 MB per Short |
 
-1.  **Prepare Script**: Ensure your `.txt` files are in the `input/` folder.
-2.  **Generate One Video**: Test the pipeline with Part 1:
-    ```bash
-    python src/generate_short.py input/part_0001.txt 1
-    ```
-3.  **Check Output**: Find your video in `output/part_0001/final_short.mp4`.
-4.  **Scale Up**: Use the batch tool for the whole series:
-    ```bash
-    python tools/batch_generate.py --start 1 --end 10
-    ```
+## 🎬 Usage
 
-## 🧠 Local AI Hook Rewriting (Psychology Engine)
-
-The pipeline now uses a built-in **Psychology Engine** (`src/psychology_engine.py`) to automatically select high-tension dialogue and build "Open Loop" hooks. No manual Ollama intervention is required per part, but the system remains compatible with external rewriters.
-
-## 📖 Command Reference
-
-Grouped by task. Run these from the project root.
-
-### 🛠️ System Setup
+### Generate a Single Part
 ```bash
-# 1. Activate Environment (Windows)
-.\venv\Scripts\Activate.ps1
-
-# 2. Install Primary Dependencies
-pip install -r requirements.txt
-
-# 3. Setup Kokoro TTS (MANDATORY for emotional voices)
-# Ensure /models/ directory is present with .onnx and .bin files
-```
-
-### 🧠 AI & Model Setup (Ollama)
-```bash
-# Pull the required hook-rewriting model
-ollama pull llama3.2:3b
-
-# Check if Ollama is running
-ollama serve
-```
-
-### 🎬 Video Generation
-```bash
-# 1. Generate a single part (Part 1)
 python src/generate_short.py input/part_0001.txt 1
+```
 
-# 2. Generate a range of parts (Batch)
+### Generate a Range of Parts (Batch)
+```bash
+# Generate parts 1-10
 python tools/batch_generate.py --start 1 --end 10
 
-# 3. Resume batch from specific part
-python tools/batch_generate.py --start 50
+# Resume from where you left off
+python tools/batch_generate.py
+
+# Generate with 2 parallel threads
+python tools/batch_generate.py --threads 2 --start 1 --end 5
 ```
 
-### 📝 Content Preparation
+### Content Preparation
 ```bash
-# 1. Split DOCX story into text parts
+# Split DOCX story into text parts
 python tools/split_story.py
 
-# 2. Verify everything is installed correctly
+# Verify everything is installed correctly
 python tools/verify_system.py
 ```
 
-### 🧹 Maintenance & Cleanup
+### Maintenance & Cleanup
 ```bash
 # Wipe all generated files, logs, and caches (Fresh Start)
 powershell -Command "Remove-Item -Path '.cache', '.temp', 'logs', 'output' -Recurse -Force -ErrorAction SilentlyContinue; Get-ChildItem -Path . -Filter '__pycache__' -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
@@ -184,52 +160,105 @@ powershell -Command "Remove-Item -Path '.cache', '.temp', 'logs', 'output' -Recu
 Get-Content logs/generation.log -Wait
 ```
 
-## Features
+## ⚙️ Configuration
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **Emotional TTS** | ✅ | **[NEW]** Dynamic voice swapping based on segment mood (Kokoro-ONNX) |
-| **Freeze-Free Video** | ✅ | **[STABILIZED]** Robust FFmpeg xfade logic with stream normalization |
-| **2-Pass Render** | ✅ | Separate video+subs pass from audio mix (faster, debuggable) |
-| **Natural Subtitles** | ✅ | Punctuation-aware chunking (no mid-sentence breaks) |
-| **SFX Integration** | ✅ | Mood-based SFX placed on timeline with millisecond precision |
-| **Robust Pexels** | ✅ | Automatic search retries & tier-3 nature fallbacks |
-| **Visual Branding** | ✅ | Persistent watermark + CTA overlay + Part tag |
-| **Loop Bridge** | ✅ | Echo opening audio at end → triggers replays |
-| **Smart Backgrounds** | ✅ | Expanded story-aware whitelist (Academy, Palace, Mana) |
-| **AI Disclosure** | ✅ | YouTube 2026 policy compliant overlay |
-
-## Branding Strategy
-
-> **No spoken intros/outros** — they kill retention on Shorts.
-
-Instead, branding is 100% visual:
-- **Watermark**: Channel logo in top-left corner (persistent, 70% opacity)
-- **Part Tag**: "Part N" text in first 4 seconds
-- **CTA Overlay**: "Like & Subscribe for Part N+1!" during final 3 seconds
-- **Loop Bridge**: Audio loops seamlessly for re-watches
-
-## Configuration
-
-All settings are in [`src/config.py`](src/config.py). Key knobs:
+All settings are in [`src/config.py`](src/config.py). Key parameters:
 
 ```python
+# Video Output
+VID_FPS = 30                    # YouTube Shorts standard
+VID_WIDTH = 1080                # Shorts resolution
+VID_HEIGHT = 1920
+VIDEO_CRF = 14                  # Quality (lower = better, larger files)
+
 # TTS
-USE_LOCAL_TTS = True       # Must be True for emotional depth
+USE_LOCAL_TTS = True            # Kokoro for emotional depth
+TTS_SPEED = 1.1                 # Pacing for retention
+
+# Audio Mixing
+SFX_VOLUME = 0.30               # Ambient SFX (won't overpower voice)
+MUSIC_VOLUME = 0.10             # Background music level
+
+# Duration
+DURATION_MODE = "unlimited"     # Full audio length (max 180s)
 
 # Visual Branding
 SHOW_CHANNEL_WATERMARK = True
 SHOW_CTA_OVERLAY = True
 SHOW_PART_TAG = True
+CTA_TEXT = "Like & Subscribe for Part {next_part}!"
+# Progress bar has been removed to rely on YouTube's native UI
 
-# Audio
-TTS_SPEED = 1.1            # Perfect pacing for retention
-MUSIC_VOLUME = 0.10        # Background music level
+# Subtitles
+WORDS_PER_CUE = 3              # Punchy karaoke style
+FONT_NAME = "Impact"
+LETTER_SPC = 0                 # Letter spacing (0 = normal)
 ```
 
-## Dependencies
+## ✅ Features
 
-- **FFmpeg** (required): Video/audio processing
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Emotional TTS** | ✅ | Multi-character voice swapping with mood-based prosody (Kokoro-ONNX) |
+| **Psychology Engine** | ✅ | Auto-selects highest-tension hook from story middle |
+| **Dynamic Metadata** | ✅ | Unique per-part titles + descriptions with mood-specific hashtags |
+| **Nature-Aware SFX** | ✅ | Mobile-optimized high frequency sound effects placed on timeline |
+| **Voice-Safe Mixing** | ✅ | amix filter with voice pre-boost prevents 1/N volume attenuation |
+| **Frame-Perfect Subs** | ✅ | librosa onset detection for word-level synchronization |
+| **Loop Bridge** | ✅ | Echo opening audio at end → triggers replays (15-25% boost) |
+| **Cinematic Transitions**| ✅ | Smooth crossfades, fade-to-black, and dissolves instead of wipes |
+| **Nature Backgrounds** | ✅ | Majestic weather and nature-themed keyword whitelist |
+| **Visual Branding** | ✅ | Persistent watermark + CTA overlay + Part tag (no spoken intros) |
+| **3-Digit Naming** | ✅ | Consistent `part_001`–`part_192` folder/file naming |
+| **Batch Safety** | ✅ | 30-min subprocess timeout + state.json resume support |
+| **Artifact Removal** | ✅ | Automatically cleans "End of Part X" artifacts during parsing |
+
+## 🎯 Branding Strategy
+
+> **No spoken intros/outros** — they kill retention on Shorts.
+
+Branding is 100% visual:
+- **Watermark**: Channel logo in top-left corner (persistent, 70% opacity)
+- **Part Tag**: "Part N" text in first 4 seconds
+- **CTA Overlay**: "Like & Subscribe for Part N+1!" during final 5 seconds
+- **Loop Bridge**: Audio loops seamlessly for re-watches
+- **Native UI**: Relies on YouTube's built-in progress bar for a cleaner premium look
+
+## 📊 YouTube Algorithm Optimization
+
+The pipeline is optimized for YouTube Shorts discoverability:
+
+| Factor | Implementation |
+|---|---|
+| **Hook (0-3s)** | Psychology engine picks highest-intensity sentence from story mid-point |
+| **Retention** | Karaoke subtitles + cinematic nature visuals + 30 FPS smooth playback |
+| **Re-watches** | Loop bridge + cliffhanger endings |
+| **Metadata** | Mood emoji titles + rotating hashtags + unique descriptions per part |
+| **File Size** | Optimized encoding (~10-20 MB per Short) |
+
+## 📦 Dependencies
+
+- **FFmpeg** (required): Video/audio processing — must support `libx264` profile `4.2`
 - **Python 3.10+**: Core runtime
-- **Kokoro Models**: (Required) Place `kokoro-v1.0.onnx` in `models/`
+- **Kokoro Models**: Place `kokoro-v1.0.onnx` in `models/`
 - **Pexels API Key**: Background video footage (set in `.env`)
+- **Ollama** (optional): Local LLM for hook rewriting
+
+## 📋 Changelog (v2.1 — The "Nature & Polish" Update)
+
+### Pipeline Updates
+- **Visual Aesthetic**: Transitioned to 100% nature and weather-themed backgrounds.
+- **Cinematic Transitions**: Removed jarring wipe effects in favor of smooth crossfades and dissolve.
+- **Narrative Re-Splitting**: Improved `split_story.py` to prevent "End of Part X" artifacts from polluting the script.
+- **SFX Overhaul**: Adjusted all sound effect frequencies to ensure clarity on mobile phone speakers.
+- **Progress Bar Removal**: Deprecated the custom red line to rely on YouTube's native progress bar for a cleaner look.
+
+### Previous Bug Fixes
+- **FPS**: Reduced from 60 → 30 (YouTube Shorts standard, ~50% smaller files)
+- **SFX Volume**: Reduced from 0.65 → 0.30 (no longer overpowers narration)
+- **3-Digit Naming**: All paths use `:03d` format (`part_001` not `part_01`) — supports 192 parts
+- **Hook Newline Leak**: `\n` in hook text no longer leaks into video titles
+- **Bare Except Blocks**: All 12 bare `except:` replaced with specific exception types
+- **amix Voice Drop**: Voice pre-boosted by N× before amix to prevent 1/N attenuation
+- **Duplicate "hissed"**: Removed from SAID_VERBS list
+- **Dead Code**: Removed unused `get_segment_duration()` (was generating TTS twice)

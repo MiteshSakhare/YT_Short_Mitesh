@@ -1,14 +1,6 @@
 # Part 13: The Unbinding
 
 NARRATOR:
-When the last memory of your life was erased, the darkness began.
-
-Kaelen stood in the center of the old ritual chamber beneath the Academy—a place abandoned since the truce was signed, its walls carved with faded wards, its air thick with dust and forgotten power. Seraphina had found it in the Valtiel archives, a room built to contain the kind of magic that could not be spoken of in daylight.
-
-Now, in the hour before dawn, it would serve a different purpose.
-
-Rin had secured the perimeter, her glutton’s senses stretched to catch any approaching footsteps. Elara was at the chamber’s entrance, her books spread around her, cross-referencing the old wards with the seal’s patterns. Seraphina stood beside Kaelen, her hand in his, her face pale but resolute.
-
 “Once the key is used,” she said quietly, “the other two locks will engage. You’ll have a window—maybe an hour—before they seal permanently. If you haven’t removed the collar by then…”
 
 He looked at the key in his palm. Vex’ahlia’s key. A gift that was also a test. She had given him the means to free himself, but only if he was willing to pay the price.
@@ -16,3 +8,13 @@ He looked at the key in his palm. Vex’ahlia’s key. A gift that was also a te
 He inserted the key into the lock on his collar—the one marked with the Church’s celestial sigil. It fit perfectly. He turned it.
 
 The collar hummed. The silver rings shifted, contracting, then expanding, and for a moment, the pressure on his seal eased. The frozen ocean stirred. The ice cracked.
+
+But the other two locks held. The demon lords’ sigil and Seraphina’s bloodline mark blazed with light, tightening the collar’s grip. He had one hour. One hour to remove the other two keys, or the collar would seal forever, and his power would be bound until the day he died.
+
+“The demon lords’ key,” Seraphina said, her voice tight. “It’s held by Lord Malachar. He’s in the Academy, in the demon quarter. I can—”
+
+“No.” Kaelen shook his head. “If you go to him, he’ll demand something in return. A concession. A promise. I won’t put you in that position.”
+
+“I’ll take it.”
+
+The voice came from the shadows. Rin stepped into the circle of torchlight, her dagger sheathed, her expression grim. “Lord Malachar owes me a debt. Three years ago, I saved his youngest son from a mana collapse. He said he’d repay me anything, any time.” She looked at Kaelen. “I’m calling it in.”

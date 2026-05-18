@@ -185,51 +185,9 @@ def get_audio_duration(path: str) -> float:
     except Exception:
         return 1.0
 
-# ═══════════════════════════════════════════════════════════════════════════════
-#  UPGRADE #1: REAL-TIME DURATION MEASUREMENT (±20ms accuracy)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-async def get_segment_duration(character: str, text: str) -> float:
-    """
-    Measure ACTUAL duration of TTS audio segment.
-    More accurate than word-count estimation (±20ms vs ±500ms).
-    
-    Returns: Duration in seconds (float)
-    """
-    import tempfile
-    
-    try:
-        # Generate TTS to temp file
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-            tmp_path = tmp.name
-        
-        try:
-            voice = config.VOICES.get(character, config.VOICES["_default"])
-            rate = config.VOICE_STYLE.get(character, {}).get("rate", "+0%")
-            pitch = config.VOICE_STYLE.get(character, {}).get("pitch", "+0Hz")
-            
-            # Generate TTS
-            tts = edge_tts.Communicate(text=text, voice=voice, rate=rate, pitch=pitch)
-            await tts.save(tmp_path)
-            
-            # Measure duration using ffprobe
-            result = subprocess.run(
-                ["ffprobe", "-v", "quiet", "-print_format", "json",
-                 "-show_format", tmp_path],
-                capture_output=True, text=True, check=True
-            )
-            
-            duration = float(json.loads(result.stdout)['format']['duration'])
-            logger.debug(f"  ✓ Real-time duration: {character} = {duration:.2f}s")
-            return duration
-            
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
-    
-    except Exception as e:
-        logger.warning(f"⚠️ Real-time duration measurement failed: {e}, using estimate")
-        return len(text.split()) / 3.0  # Fallback estimate
+# NOTE: get_segment_duration() REMOVED — was dead code that generated TTS
+# to a temp file just to measure duration, then discarded it.
+# Duration is now measured in-pipeline via generate_all_audio() → get_audio_duration().
 
 # AI Disclosure logic removed per user request
 
@@ -841,7 +799,7 @@ async def generate_tts_segment(
             try:
                 with open(timing_cache, 'r', encoding='utf-8') as f:
                     return json.load(f)
-            except:
+            except (json.JSONDecodeError, OSError):
                 logger.warning("   ⚠️ TTS Timing cache corrupt, regenerating...")
     # ──────────────────────────────────────────────────────────
 
@@ -1377,7 +1335,7 @@ def generate_thumbnail(text: str, part_num: int, output_path: str, mood: str = "
     # Cleanup temp frame
     if bg_video and bg_path and os.path.exists(bg_path):
         try: os.remove(bg_path)
-        except: pass
+        except OSError: pass
         
     return output_path
 
@@ -1465,7 +1423,7 @@ def _draw_hook_text(draw, text, part_num):
     try:
         font_main = ImageFont.truetype(font_path, config.THUMBNAIL_FONT_SIZE)
         font_part = ImageFont.truetype(font_path, 80)
-    except:
+    except (OSError, IOError):
         font_main = ImageFont.load_default()
         font_part = ImageFont.load_default()
         
@@ -1700,18 +1658,22 @@ def mix_sfx_into_audio(
     for idx, (ts, sfx_path, sfx_type) in enumerate(placements):
         inputs += ["-i", sfx_path]
         input_idx = idx + 1
-        # Delay each SFX to its timestamp, use higher volume from config
+        # Delay each SFX to its timestamp
         delay_ms = int(ts * 1000)
-        sfx_vol = getattr(config, 'SFX_VOLUME', 0.65)
+        sfx_vol = getattr(config, 'SFX_VOLUME', 0.30)
         filter_parts.append(
             f"[{input_idx}:a]volume={sfx_vol},adelay={delay_ms}|{delay_ms}[sfx{idx}]"
         )
 
-    # Mix all SFX with the voice without auto-normalizing volume (which crushes voice)
+    # Fix: amix divides each input's volume by 1/N. Even with normalize=0, the voice
+    # gets attenuated when multiple SFX are mixed. Pre-boost voice to compensate.
     sfx_labels = "".join(f"[sfx{i}]" for i in range(len(placements)))
     mix_inputs = len(placements) + 1  # voice + all SFX
     filter_parts.append(
-        f"[0:a]{sfx_labels}amix=inputs={mix_inputs}:duration=first:normalize=0[out]"
+        f"[0:a]volume={mix_inputs}[v_boosted]"
+    )
+    filter_parts.append(
+        f"[v_boosted]{sfx_labels}amix=inputs={mix_inputs}:duration=first:dropout_transition=0:normalize=0[out]"
     )
 
     filter_complex = "; ".join(filter_parts)
@@ -1877,12 +1839,9 @@ def compose_video(
         )
         current_v = "[cta]"
 
-    # Layer 6: Progress bar (bottom of screen)
-    pb_color = getattr(config, 'PROGRESS_BAR_COLOR', 'red@0.8')
+    # Layer 6: Final Formatting (No custom progress bar, rely on native UI)
     v_parts.append(
-        f"{current_v}drawbox=y=ih-15:color={pb_color}:"
-        f"width=iw*t/{final_dur}:height=15:thickness=fill,"
-        f"fps={config.VID_FPS},"
+        f"{current_v}fps={config.VID_FPS},"
         f"setpts=PTS-STARTPTS,"
         f"setsar=1/1,"
         f"format=yuv420p[final_v]"
@@ -1952,78 +1911,116 @@ def compose_video(
 def generate_video_metadata(part_num: int, hook_text: str, segments: list, output_path: str, mood: str = "epic"):
     """
     Generates YouTube metadata (Title, Description, Tags) for the video.
+    Each part gets a UNIQUE description based on mood + content to avoid
+    YouTube's duplicate content penalty.
     """
     try:
-        # Title logic: "The Twice-Crowned King | Part {part_num} {hook_text}"
-        # Break at last word before 95 chars to leave room for "..."
-        clean_hook = hook_text.replace("\n", " ")
-        base_title = f"The Twice-Crowned King | Part {part_num} {clean_hook}"
+        # ── TITLE: Clean hook + Part number ──────────────────────────
+        # Strip any raw newlines from hook (psychology_engine's build_open_loop_hook
+        # returns 2-line hooks with \n for the hook card, but titles must be single-line)
+        clean_hook = hook_text.replace("\n", " ").replace("\r", "").strip()
+        
+        # Mood emoji for algorithmic title differentiation
+        mood_emoji = {
+            "dark": "⚔️", "sad": "💔", "epic": "🔥", "thrill": "⚡",
+            "happy": "✨", "mystery": "🔮", "surprise": "😱", "neutral": "👑",
+            "gloomy": "🌑", "ominous": "💀"
+        }.get(mood.lower(), "👑")
+        
+        base_title = f"{mood_emoji} {clean_hook} | Part {part_num} #shorts"
         if len(base_title) > 95:
             title = base_title[:92].rsplit(' ', 1)[0] + "..."
         else:
             title = base_title
-            
-        # Build description
+
+        # ── DESCRIPTION: Unique per-part, mood-aware ────────────────
         summary = " ".join([s['text'] for s in segments[:3] if 'text' in s])
         if len(summary) > 200:
             summary = summary[:197] + "..."
-            
+
+        # Mood-specific hook questions (unique per mood, not static)
+        mood_hooks = {
+            "dark":     "Darkness stirs beneath the surface. What price will be paid?",
+            "sad":      "Some wounds run deeper than any blade...",
+            "epic":     "The battle lines are drawn. Who will stand when the dust settles?",
+            "thrill":   "One wrong move, and everything changes forever.",
+            "happy":    "A rare moment of light in a world of shadows.",
+            "mystery":  "The truth has been hiding in plain sight all along.",
+            "surprise": "Nobody saw this coming. Not even him.",
+            "neutral":  "The story continues... but nothing is what it seems.",
+            "gloomy":   "Hope fades, but the fire within refuses to die.",
+            "ominous":  "A shadow falls over everything he's built.",
+        }
+        mood_question = mood_hooks.get(mood.lower(), "The story continues...")
+
+        # Core hashtags (always present)
         hashtags = [
             "#TheTwiceCrownedKing",
             f"#Part{part_num}",
-            "#FantasyShorts",
-            "#Audiobook",
-            "#EpicFantasy",
-            "#StoryTime",
-            "#ViralShorts"
+            "#shorts",
+            "#fantasy",
+            "#storytime",
         ]
-        
-        if mood.lower() == "sad":
-            hashtags.extend(["#Emotional", "#Tragedy", "#Heartbreak"])
-        elif mood.lower() == "epic":
-            hashtags.extend(["#Action", "#Cinematic", "#Power"])
-        elif mood.lower() == "dark":
-            hashtags.extend(["#DarkFantasy", "#Mystery", "#Betrayal"])
-            
-        description = f"""✨ {title}
 
-🎧 Best experienced with headphones.
+        # Mood-specific hashtags for discoverability
+        mood_tags = {
+            "sad":      ["#emotional", "#tragedy", "#heartbreak"],
+            "epic":     ["#action", "#cinematic", "#epicfantasy"],
+            "dark":     ["#darkfantasy", "#mystery", "#betrayal"],
+            "thrill":   ["#thriller", "#suspense", "#action"],
+            "happy":    ["#wholesome", "#anime", "#hope"],
+            "mystery":  ["#mystery", "#plot_twist", "#secrets"],
+            "surprise": ["#plottwist", "#shocking", "#unexpected"],
+        }
+        hashtags.extend(mood_tags.get(mood.lower(), ["#reincarnation", "#demonking"]))
 
-{hook_text}
+        # Rotating engagement hashtags (cycle based on part number)
+        engagement_tags = [
+            ["#fyp", "#viral", "#mustwatch"],
+            ["#foryoupage", "#audiobook", "#webtoon"],
+            ["#animestory", "#isekai", "#viral"],
+        ]
+        hashtags.extend(engagement_tags[part_num % len(engagement_tags)])
 
-📖 {summary}
+        description = (
+            f"{mood_question}\n"
+            f"\n"
+            f"📖 The Twice-Crowned King — Part {part_num}/192\n"
+            f"A Demon Emperor betrayed and reborn must survive an academy \n"
+            f"where humans, demons, and the Church wage a secret war.\n"
+            f"\n"
+            f"{clean_hook}\n"
+            f"\n"
+            f"📖 {summary}\n"
+            f"\n"
+            f"🔔 Follow for daily parts!\n"
+            f"🎧 Best with headphones\n"
+            f"\n"
+            f"{' '.join(hashtags)}\n"
+        )
 
-Will the Twice-Crowned King reclaim his glory or fall to the shadows once more?
-Follow his journey and watch the full series on our channel! 🚀
-
-Hit that Subscribe button so you don't miss the next part! ⚔️👑
-
-{ " ".join(hashtags) }
-
-#Storytelling #FantasyWorld #King #Betrayal #Shorts
-"""
-        
         metadata = {
             "title": title,
             "description": description,
             "tags": [h.strip("#") for h in hashtags] + ["Fantasy", "Story", "Twice Crowned King"],
-            "part": part_num
+            "part": part_num,
+            "mood": mood,
         }
-        
+
         # Save as readable text file
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(f"TITLE:\n{title}\n\n")
             f.write(f"DESCRIPTION:\n{description}\n\n")
             f.write(f"TAGS:\n{', '.join(metadata['tags'])}\n")
-            
+
         # Also save as JSON for potential auto-uploaders
         json_path = output_path.replace('.txt', '.json')
         with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, indent=4)
-            
+            json.dump(metadata, f, indent=4, ensure_ascii=False)
+
         logger.info(f"📝 Metadata generated: {output_path}")
         return metadata
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to generate metadata: {e}")
         return None
@@ -2070,7 +2067,7 @@ async def generate_short(input_text: str, part_num: int = 1) -> Dict:
     logger.info("=" * 60)
 
     # Create directories
-    part_dir = config.OUTPUT_DIR / f"part_{part_num:02d}"
+    part_dir = config.OUTPUT_DIR / f"part_{part_num:03d}"
     audio_dir = part_dir / "audio"
     try:
         part_dir.mkdir(exist_ok=True, parents=True)
@@ -2158,7 +2155,7 @@ async def generate_short(input_text: str, part_num: int = 1) -> Dict:
 
         # ── STEP 8.5: Generate thumbnail ─────────────────────────
         logger.info("🖼️  Step 8.5/10: Generating YouTube thumbnail…")
-        thumbnail_png = str(config.OUTPUT_DIR / f"thumbnail_part_{part_num:02d}.jpg")
+        thumbnail_png = str(config.OUTPUT_DIR / f"thumbnail_part_{part_num:03d}.jpg")
         generate_thumbnail(hook_text, part_num, thumbnail_png, overall_mood, bg_video=bg_path)
 
         # ── STEP 9: Generate music ───────────────────────────────
@@ -2169,7 +2166,7 @@ async def generate_short(input_text: str, part_num: int = 1) -> Dict:
 
         # ── STEP 10: Compose final video ─────────────────────────
         logger.info("🎬 Step 10/10: Composing final video (2-pass)…")
-        output_video = str(config.OUTPUT_DIR / f"short_part_{part_num:02d}.mp4")
+        output_video = str(config.OUTPUT_DIR / f"short_part_{part_num:03d}.mp4")
         compose_video(
             bg_video=bg_path, audio=audio_path, subtitles=sub_path,
             hook_img=hook_png, music=music_path,
@@ -2180,20 +2177,20 @@ async def generate_short(input_text: str, part_num: int = 1) -> Dict:
         # ── UPGRADE #2: Loop transition (15-25% replay boost) ────
         if config.ADD_LOOP_TRANSITION:
             logger.info("⭐ UPGRADE: Adding loop transition…")
-            looped_video = str(config.OUTPUT_DIR / f"short_part_{part_num:02d}_looped.mp4")
+            looped_video = str(config.OUTPUT_DIR / f"short_part_{part_num:03d}_looped.mp4")
             output_video_new = add_loop_transition_overlay(output_video, looped_video, 2.5)
             if os.path.exists(output_video_new):
                 try:
                     os.remove(output_video)  # Delete intermediate
                     output_video = output_video_new
-                except:
+                except OSError:
                     pass  # Keep original if deletion fails
 
         # AI disclosure removed per user request
         
         # ── STEP 11: Generate metadata ───────────────────────────
         logger.info("📝 Step 11/11: Generating video metadata…")
-        metadata_txt = str(config.OUTPUT_DIR / f"metadata_part_{part_num:02d}.txt")
+        metadata_txt = str(config.OUTPUT_DIR / f"metadata_part_{part_num:03d}.txt")
         generate_video_metadata(part_num, hook_text, segments, metadata_txt, overall_mood)
 
         logger.info(f"✅ Short ready! | {total_dur:.1f}s | {os.path.getsize(output_video)/1024/1024:.1f} MB | {output_video}")

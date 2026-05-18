@@ -1,16 +1,12 @@
 # Part 8: The Tribunal
 
 NARRATOR:
-When silence screams, darkness unfurls from beneath the masked inquisitors suffocating stare.
-
-The human judge cleared her throat. “The tribunal is not here to debate Church procedures. We are here to determine whether you pose a threat to the Academy’s truce. Evidence will be presented. Witnesses will be called. You will have your chance to speak.”
-
-She gestured to a side door, and Captain Valerius entered, his scarred face flushed with righteous anger. He took a position opposite Kaelen, his hand resting on the hilt of his ceremonial sword.
-
-“Captain Valerius,” the human judge said. “You initiated the investigation into the accused. Present your evidence.”
-
 Valerius’s voice was a growl. “The accused’s mana registered as corrupt during a standard Academy test. The crystal displayed a black resonance—a known marker of demonic corruption beyond acceptable thresholds. Furthermore, the accused was found in the demon quarter after hours, consorting with known agitators. He bears a mark from a glutton demon—a mark that allows him to be tracked and influenced by demonic forces. And today, during the sparring session, he unleashed a wave of mana that incapacitated over a dozen students and faculty, a clear violation of Academy protocols.”
 
 He turned to face the gallery, playing to the crowd. “This is not a student. This is a weapon. A weapon that the demon faction has been cultivating in secret. If we do not act now, the truce will not survive the month.”
 
 The demon judge’s sneer widened. “Consorting with known agitators? You mean his own cousin, Lady Seraphina Valtiel? By that logic, every demon student in this Academy is an agitator.”
+
+Valerius opened his mouth to retort, but the masked inquisitor raised a hand. “The mark from the glutton demon. Explain.”
+
+Kaelen answered before Valerius could. “A glutton demon named Rin marked me without my consent on my first day. I did not invite it, and I have not used it for any purpose. The Church agent who marked me with a tracking coin—Gaius—did so with equal lack of consent. If bearing an unwanted mark is heresy, then half the students in this Academy are heretics.”

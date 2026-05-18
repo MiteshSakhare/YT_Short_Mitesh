@@ -1,12 +1,6 @@
 # Part 8: The Tribunal
 
 NARRATOR:
-Awakening as Kaelen Vane, Im the vessel of an ancient horror, born to devour.
-
-The inquisitor’s head tilted. “Inheritance from whom? The Vane line has no history of black mana. The Valtiel line has no history of black mana. You are an anomaly. A deviation. And the Church does not tolerate deviations that threaten the peace.”
-
-He reached out, his gloved hand hovering over Kaelen’s chest—directly above the seal. “I will know what you are. One way or another.”
-
 The seal erupted.
 
 Not in response to Kaelen’s will, but in defense. A pulse of black light shot from his chest, slamming into the inquisitor’s hand and throwing him back against the judge’s bench. The masked man crumpled, his robes smoking, his breath coming in ragged gasps.
@@ -20,3 +14,7 @@ Vex’ahlia’s voice cut through the pandemonium like a blade. She stood at the
 She walked into the chamber, and the chaos subsided. Students froze. Cadets lowered their weapons. Even the demon lord judge inclined his head, a gesture of reluctant respect.
 
 “Commander,” the masked inquisitor rasped, struggling to his feet. “The heretic attacked me. He must be—”
+
+“He did not attack you,” Vex’ahlia interrupted. “I saw what happened. You touched a binding seal you did not understand, and it responded. That is not an attack. That is a defense mechanism.” She turned to Kaelen, her expression unreadable. “You are full of surprises, Vane.”
+
+She walked to the center of the chamber, positioning herself between Kaelen and the judges. “The tribunal will hear from a new witness. Summon Seraphina Valtiel.”

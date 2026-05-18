@@ -53,7 +53,7 @@ SHOW_PART_TAG = True           # Show "PART X" tag at top-right
 PART_TAG_DURATION = 5.0        # Stay on screen for 5s
 SHOW_CTA_OVERLAY = True        # Show "Follow for Part X+1" at end
 CTA_DURATION = 5.0             # End-screen duration
-CTA_TEXT = "What happens next? \nSubscribe for Part {next_part}!"
+CTA_TEXT = "Like & Subscribe for Part {next_part}!"
 
 # ─────────────────────────────────────────────────────────────
 #  CHANNEL & LOGGING SETTINGS
@@ -67,7 +67,7 @@ LOG_LEVEL = "INFO"                        # CRITICAL, ERROR, WARNING, INFO, DEBU
 # ─────────────────────────────────────────────────────────────
 VID_WIDTH = 1080              # YouTube Shorts width
 VID_HEIGHT = 1920             # YouTube Shorts height
-VID_FPS = 60                  # Frames per second
+VID_FPS = 30                  # Frames per second (YouTube Shorts standard)
 
 # Duration presets  ←  CHOOSE ONE
 DURATION_MODE = "unlimited"       # "unlimited" = full audio length (no hard cap)
@@ -264,6 +264,7 @@ SCENE_TRANSITION_DUR = 1.8     # Crossfade between background scenes
 #  SUBTITLE SETTINGS (Viral karaoke style)
 # ─────────────────────────────────────────────────────────────
 WORDS_PER_CUE = 3               # 🚀 Punchy 3-word cues for maximum retention
+LETTER_SPC = 0                   # Letter spacing for subtitles (0 = normal, referenced by subtitle_sync)
 FONT_NAME = "Impact"           # Viral YouTube Shorts font
 FONT_SIZE = 92                  # Adjusted for 3 words per cue
 OUTLINE_WIDTH = 5               # Thick outline for contrast
@@ -318,22 +319,76 @@ PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "")
 
 # Mood → Pexels search terms
 PEXELS_SEARCH_TERMS = {
-    "dark":     ["dark obsidian fortress cinematic", "black stone castle", "dark underground chamber glowing", "shadowy gothic corridor", "silver flame brazier night"],
-    "gloomy":   ["misty desolate borderlands", "ash and thorn landscape", "gloomy gothic courtyard fog", "dark clouded sky over ruins"],
-    "sad":      ["solitary throne stone empty", "abandoned dark ruins aerial", "frozen ocean abstract ice", "cold frost spreading on window"],
-    "thrill":   ["magical black light energy abstract", "clashing swords fantasy cinematic", "burning castle dark fantasy", "celestial silver light burst"],
-    "happy":    ["warm candlelight mahogany room", "sunrise over medieval academy", "golden hour fantasy courtyard", "peaceful medieval garden fountain"],
-    "epic":     ["epic black and white stone academy aerial", "dark fantasy battleground storm", "glowing magic crystal obelisk", "majestic stained glass dome sunlight"],
-    "surprise": ["shattering ice magical abstract", "burst of silver and black light", "sudden frost spreading cinematic", "glowing runes dark stone"],
-    "mystery":  ["ancient dusty library candlelight scrolls", "underground stone ritual chamber", "misty borderlands fantasy", "faded magical wards glowing"],
-    "neutral":  ["spire academy white marble black stone", "gothic medieval architecture", "elegant mahogany study interior"],
+    "epic": [
+        "thunderstorm lightning dramatic sky",
+        "storm waves crashing rocks ocean",
+        "volcano eruption lava dramatic",
+        "lightning bolt dark sky dramatic",
+        "mountain storm dramatic clouds aerial wilderness",
+    ],
+    "dark": [
+        "dark storm clouds dramatic sky",
+        "dense fog forest night wilderness",
+        "cave underground dramatic light ray",
+        "night forest shadows moonlight",
+        "heavy overcast sky grey dramatic",
+    ],
+    "gloomy": [
+        "grey fog morning lake wilderness",
+        "misty valley overcast sky",
+        "barren winter landscape leafless trees",
+        "dark overcast sky before storm",
+        "grey ocean waves stormy",
+    ],
+    "sad": [
+        "rain falling slow motion nature",
+        "grey rainy day empty landscape",
+        "fog over still lake morning wilderness",
+        "autumn leaves falling slow cinematic",
+        "overcast sky gentle rain nature",
+    ],
+    "thrill": [
+        "lightning strike dramatic slow motion",
+        "fast river rapids rushing water",
+        "storm waves dramatic ocean crashing",
+        "heavy rain storm dramatic nature",
+        "waterfall powerful rushing dramatic",
+    ],
+    "happy": [
+        "golden hour sunset warm light nature",
+        "sunlight through forest trees rays",
+        "clear blue sky clouds time lapse",
+        "sunrise mountain golden light dramatic",
+        "warm sunlight meadow flowers nature",
+    ],
+    "mystery": [
+        "fog forest path mysterious cinematic",
+        "mist rolling over mountains slow",
+        "night sky stars milky way",
+        "foggy lake dawn atmospheric wilderness",
+        "deep forest mist mysterious light",
+    ],
+    "surprise": [
+        "lightning flash dramatic storm night",
+        "light breaking through storm clouds dramatic",
+        "storm time lapse dramatic sky",
+        "dramatic sky clearing after storm",
+        "lightning over dark landscape dramatic",
+    ],
+    "neutral": [
+        "cinematic landscape dramatic sky nature",
+        "mountain aerial view dramatic clouds",
+        "forest aerial cinematic slow motion",
+        "dramatic sky clouds time lapse",
+        "nature cinematic slow motion landscape",
+    ],
 }
 
 # ─────────────────────────────────────────────────────────────
 #  SOUND EFFECTS (Mood-based)
 # ─────────────────────────────────────────────────────────────
 MOOD_SFX_ENABLED = True
-SFX_VOLUME = 0.65               # 🔊 INCREASED heavily to ensure they are clearly heard (0.0-1.0)
+SFX_VOLUME = 0.30               # 🔊 Balanced: audible but won't overpower narration (0.0-1.0)
 
 # Transition SFX between scene changes
 TRANSITION_SFX_ENABLED = True
@@ -410,107 +465,115 @@ ALLOWED_BACKGROUND_KEYWORDS = [
 
 # Blacklist: Strictly remove modern/unrelated content
 BLACKLIST_BACKGROUND_KEYWORDS = [
-    "car", "truck", "city", "modern", "technology", "phone", "computer", "plastic", 
-    "people", "person", "man", "woman", "face", "talking", "smile", "happy", 
-    "bright colors", "office building", "traffic", "neon", "robot", "sci-fi",
-    "advertisement", "text", "logo", "social media", "urban", "fashion", "3d render",
-    "cartoon", "animation", "illustration", "airplane", "airport", "train", "bus",
-    "bicycle", "motorcycle", "asphalt", "skyscraper", "electricity", "wires",
-    "vehicle", "automobile", "highway", "billboard", "gadget", "electronics",
-    "crowd", "audience", "group of people", "classroom kids", "modern school",
-    "jeans", "suit", "sneakers", "t-shirt", "wrist watch", "guns", "firearms", 
-    "hospital", "modern clinic", "modern courtroom"
+    "car", "truck", "city", "modern", "technology", "phone", "computer", "plastic",
+    "people", "person", "man", "woman", "face", "talking", "smile", "happy",
+    "child", "children", "boy", "girl", "old people", "dancer", "dancers",
+    "dancing", "bright colors", "office building", "traffic", "neon", "robot",
+    "sci-fi", "advertisement", "text", "logo", "social media", "urban",
+    "fashion", "3d render", "cartoon", "animation", "illustration", "airplane",
+    "airport", "train", "bus", "bicycle", "motorcycle", "asphalt",
+    "skyscraper", "electricity", "wires", "vehicle", "automobile", "highway",
+    "billboard", "gadget", "electronics", "crowd", "audience",
+    "group of people", "classroom kids", "modern school", "jeans", "suit",
+    "sneakers", "t-shirt", "wrist watch", "guns", "firearms", "hospital",
+    "modern clinic", "modern courtroom", "function", "public place", "statue",
+    "statues", "3d particle", "3d particles", "black and white", "b&w",
+    "copyright", "watermark", "news", "event", "party", "festival", "concert",
+    "monument", "stairs", "furniture", "room interior", "house exterior",
+    "street", "building", "glass structure", "metal structure", "table",
+    "chair", "bed", "lamp", "window", "door", "wall", "ceiling", "floor",
+    "road", "motorway", "overpass", "pavement"
 ]
 
 # Location-to-Visual Mappings for story consistency
 LOCATION_KEYWORDS = {
-    "azure pavilion": "elegant blue silk pavillion garden",
-    "silver academy": "gothic medieval academy stone building",
-    "academy": "grand black stone and white marble gothic academy aerial",
-    "spire academy": "grand black stone and white marble gothic academy aerial",
-    "obsidian fortress": "dark black stone castle fortress ominous",
-    "celestial church": "grand cathedral stained glass mystical",
-    "dark continent": "wasteland volcanic landscape dark mountains",
-    "throne room": "majestic medieval throne room gold mahogany",
-    "library": "ancient dusty library scrolls thick tomes candlelight",
-    "mahogany": "dark vintage wood interior luxury",
-    "chamber": "stone chamber torches shadows mystery",
-    "battlefield": "foggy desolate field dawn cinematic",
-    "mahogany room": "polished mahogany interior crystal chandeliers luxury",
-    "chandelier": "luxurious crystal chandelier lighting hall",
-    "dragomir": "fortified medieval manor mansion winter",
-    "imperial city": "ancient stone city gates medieval street",
-    "deep abyss": "misty dark cave void fantasy",
-    "ducal garden": "blooming medieval garden fountain flowers",
+    "azure pavilion": "clear blue sky over calm water",
+    "silver academy": "majestic snow capped mountain aerial",
+    "academy": "mountain peak clouds dramatic aerial",
+    "spire academy": "tall mountain peak piercing clouds",
+    "obsidian fortress": "dark jagged mountain cliffs storm",
+    "celestial church": "sun rays shining through clouds epic",
+    "dark continent": "desolate volcanic landscape dark",
+    "throne room": "massive stalactite cave glowing crystals",
+    "library": "quiet ancient forest tall trees fog",
+    "mahogany": "dense redwood forest dark wood",
+    "chamber": "dark mysterious cave interior",
+    "battlefield": "stormy desolate plain dark clouds",
+    "mahogany room": "dense redwood forest dark wood",
+    "chandelier": "glowing crystal stalactites dark cave",
+    "dragomir": "dark snowy mountain winter storm",
+    "imperial city": "vast mountain valley aerial view",
+    "deep abyss": "dark deep ocean trench abstract",
+    "ducal garden": "beautiful blooming flower meadow spring",
 
     # ── Kaelen's Past & The Betrayal ──
-    "demon realm": "volcanic ash landscape dark sky",
-    "dark throne": "ancient empty dark throne room stone",
-    "holy sword": "sunlight breaking through dark clouds cinematic nobody",
+    "demon realm": "volcanic ash landscape lightning",
+    "dark throne": "dark jagged rock formation stormy",
+    "holy sword": "sunlight breaking through dark clouds",
     
     # ── Rebirth & The Ducal Estate ──
-    "blinding white": "abstract ethereal white light clouds",
-    "manor": "grand ancient medieval mansion exterior",
-    "estate": "beautiful vast medieval estate gardens",
-    "study": "elegant mahogany study interior",
+    "blinding white": "bright white cloudscape aerial",
+    "manor": "peaceful green valley estate",
+    "estate": "peaceful green valley estate",
+    "study": "forest morning light rays trees",
     
     # ── The Magic Academy (Interiors) ──
-    "classroom": "ancient empty gothic classroom wood desks",
-    "hallway": "dark stone castle corridor arches",
-    "dormitory": "simple medieval stone room window light",
-    "dining hall": "grand long wooden table medieval feast hall",
-    "healers wing": "white marble floors glowing braziers clean fantasy",
-    "demon common hall": "dark wood interior crimson velvet cold blue flame braziers",
-    "tribunal chamber": "perfect circle black and white stone tiered seating stained glass dome",
-    "ritual chamber": "dark underground stone chamber faded glowing wards dust",
-    "vex'ahlia chambers": "sparse white stone room silver light arched window",
+    "classroom": "peaceful forest grove morning light",
+    "hallway": "narrow mountain canyon passage fog",
+    "dormitory": "rain falling nature gentle morning",
+    "dining hall": "wide open green meadow golden hour",
+    "healers wing": "calm crystal clear lake reflection",
+    "demon common hall": "dark forest red sunset glow",
+    "tribunal chamber": "circular crater landscape aerial",
+    "ritual chamber": "dark misty cave interior",
+    "vex'ahlia chambers": "bright snowy mountain peak",
     
     # ── The Magic Academy (Exteriors) ──
-    "courtyard": "ancient stone courtyard gothic architecture",
-    "training ground": "medieval stone courtyard combat arena",
-    "arena": "ancient roman colosseum ruins sand",
-    "gates": "massive iron gates ancient castle entrance",
-    "mana weaving arena": "underground circular stone arena glowing crystal obelisk",
+    "courtyard": "peaceful green valley mountain",
+    "training ground": "wide open mountain valley plain",
+    "arena": "wide canyon landscape dramatic sky",
+    "gates": "narrow mountain pass dramatic entrance",
+    "mana weaving arena": "circular crater landscape aerial storm",
     
     # ── Nature & The Borderlands ──
-    "dark forest": "creepy dark misty pine forest trees",
-    "bright forest": "sunlight shining through green forest trees",
+    "dark forest": "creepy dark misty pine forest",
+    "bright forest": "sunlight shining through green forest",
     "mountains": "majestic snow capped mountain peaks aerial",
     "valley": "beautiful green valley river landscape",
-    "river": "fast flowing dark river nature landscape",
+    "river": "fast flowing dark river nature",
     "waterfall": "epic tall waterfall jungle nature",
-    "borderlands": "desolate ash and thorn wasteland dark sky",
-    "blackthorn fortress": "black stone fortress rising from ash dark fantasy",
-    "cave": "dark mysterious underground cave tunnel",
-    "ruins": "ancient forgotten stone temple ruins overgrown",
+    "borderlands": "desolate wasteland dark sky storm",
+    "blackthorn fortress": "dark jagged mountain cliffs storm",
+    "cave": "dark mysterious underground cave",
+    "ruins": "ancient forgotten stone temple nature",
     
     # ── The Royal Capital & The Church ──
-    "capital": "epic medieval city aerial view sunset",
-    "palace": "gleaming white marble palace exterior",
-    "royal court": "grand majestic marble hall pillars",
-    "golden throne": "luxurious golden throne room bright light",
-    "cathedral": "massive gothic church interior stained glass",
-    "sanctuary": "peaceful holy temple interior sunlight",
-    "church quarter": "white stone architecture silver light celestial statues",
+    "capital": "vast mountain valley aerial view sunset",
+    "palace": "majestic snow capped mountain peak",
+    "royal court": "grand canyon sunlight rays",
+    "golden throne": "sunlight shining on gold autumn leaves",
+    "cathedral": "sun rays shining through clouds epic",
+    "sanctuary": "peaceful calm lake reflection",
+    "church quarter": "bright white cloudscape aerial",
     
     # ── Story Specifics (The Twice-Crowned King) ──
-    "frozen ocean": "epic glacier ice ocean dark sky magical ethereal",
-    "mana": "swirling magical energy particles glowing ethereal",
-    "sealed soul": "dark abstract cage glowing magical energy",
-    "kaelen dragomir": "dark jagged stone castle stormy sky",
-    "house valtiel": "luxurious medieval manor crest flag",
-    "ducal status": "heraldic banner noble medieval hall",
-    "daydreaming": "dreamy ethereal landscape mist",
-    "duc": "grand ancient medieval mansion exterior",
+    "frozen ocean": "epic glacier ice ocean dark sky",
+    "mana": "aurora borealis northern lights night sky",
+    "sealed soul": "dark ice cave interior frozen",
+    "kaelen dragomir": "dark jagged mountain winter storm",
+    "house valtiel": "peaceful green valley estate",
+    "ducal status": "majestic mountain peak sunlight",
+    "daydreaming": "dreamy misty morning landscape",
+    "duc": "peaceful green valley estate",
     
     # ── Abstract & Magic Elements ──
-    "void": "dark swirling abstract smoke particles",
-    "magic circle": "glowing abstract magical energy particles",
-    "black mana": "glowing black magical energy particles dark atmosphere",
-    "inquisitor": "dark hooded figure silhouette ancient chamber",
-    "celestial calendar": "ancient clockwork astronomical device glowing light",
-    "ancient library": "massive gothic library tower books dust sunlight",
-    "snowy walls": "ancient stone walls heavy snow winter sunset"
+    "void": "pitch black night sky dark",
+    "magic circle": "aurora borealis northern lights night sky",
+    "black mana": "dark storm clouds swirling",
+    "inquisitor": "dark stormy night silhouette",
+    "celestial calendar": "starry night sky milky way galaxy",
+    "ancient library": "quiet ancient forest tall trees",
+    "snowy walls": "heavy snow falling winter landscape"
 }
 
 
@@ -519,7 +582,7 @@ FILTER_BACKGROUND_CONTENT = True  # Enable content filtering for Pexels
 # ─────────────────────────────────────────────────────────────
 VIDEO_CODEC = "libx264"        # H.264 (universal YouTube compatibility)
 VIDEO_PRESET = "medium"        # 'medium' maximizes video quality
-VIDEO_CRF = 14                 # 14 = near visually lossless, ultra high quality (lower = better)
+VIDEO_CRF = 24                 # 24 = good balance of quality and size (reduced for upload speed)
 AUDIO_CODEC = "aac"
 AUDIO_BITRATE = "192k"
 AUDIO_SAMPLE_RATE = "48000"
@@ -538,7 +601,7 @@ SAID_VERBS = [
     "admitted", "continued", "added", "noted", "demanded", "corrected", "stated",
     "repeated", "explained", "spoke", "exclaimed", "cried", "shouted", "told",
     "purred", "drawled", "chimed", "mused", "sighed", "began", "finished", "scoffed",
-    "echoed", "bellowed", "snarled", "roared", "thundered", "hissed", "gasped",
+    "echoed", "bellowed", "snarled", "roared", "thundered", "gasped",
 ]
 
 # ─────────────────────────────────────────────────────────────
@@ -564,8 +627,8 @@ ADD_OUTRO = False                    # ❌ DISABLED — spoken outros destroy lo
 #  stopping the story or breaking the audio flow
 # ─────────────────────────────────────────────────────────────
 SHOW_CTA_OVERLAY = True              # ✅ Flash CTA text during the final seconds
-CTA_TEXT = "Like & Subscribe for Part {next_part}!"
-CTA_DURATION = 4.0                   # seconds, shown at the very end
+# CTA_TEXT is defined in WATERMARKING & BRANDING section above (line 56)
+CTA_DURATION = 5.0                   # seconds, shown at the very end (matches branding section)
 CTA_FONT_SIZE = 64                   # Centered and bold
 CTA_COLOR = "&H0000FFFF"             # Yellow (ASS format)
 CTA_POSITION = "top"                 # center, bottom, top

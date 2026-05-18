@@ -30,103 +30,128 @@ SFX_RECIPES = {
     "whoosh": {
         "desc": "Fast swoosh transition",
         "duration": 0.8,
-        "aevalsrc": "'0.4*sin(2*PI*(200+3000*t)*t)*exp(-4*t)'",
-        "filter": "bandpass=f=1500:w=2000,afade=t=out:st=0.5:d=0.3",
+        "aevalsrc": "'0.6*sin(2*PI*(400+4000*t)*t)*exp(-4*t)'",
+        "filter": "bandpass=f=2500:w=3000,afade=t=out:st=0.5:d=0.3",
     },
     "whoosh_soft": {
         "desc": "Gentle transition whoosh",
         "duration": 0.6,
-        "aevalsrc": "'0.25*sin(2*PI*(300+1500*t)*t)*exp(-5*t)'",
-        "filter": "bandpass=f=1000:w=1500,afade=t=out:st=0.3:d=0.3",
+        "aevalsrc": "'0.4*sin(2*PI*(500+2500*t)*t)*exp(-5*t)'",
+        "filter": "bandpass=f=1800:w=2000,afade=t=out:st=0.3:d=0.3",
     },
 
     # ── Dramatic SFX ──────────────────────────────────────────
     "boom": {
-        "desc": "Deep dramatic boom/impact",
+        "desc": "Deep dramatic boom/impact with mid-range crunch",
         "duration": 1.5,
-        "aevalsrc": "'0.7*sin(2*PI*40*t)*exp(-2*t)+0.3*sin(2*PI*80*t)*exp(-3*t)'",
-        "filter": "lowpass=f=200,afade=t=out:st=0.8:d=0.7",
+        "aevalsrc": "'0.7*sin(2*PI*60*t)*exp(-2*t)+0.4*sin(2*PI*200*t)*exp(-4*t)+0.2*(random(0)-0.5)*exp(-10*t)'",
+        "filter": "lowpass=f=800,afade=t=out:st=0.8:d=0.7",
     },
     "stinger": {
         "desc": "Dramatic reveal stinger",
         "duration": 1.2,
-        "aevalsrc": ("'0.5*sin(2*PI*220*t)*exp(-3*t)"
-                     "+0.3*sin(2*PI*330*t)*exp(-4*t)"
-                     "+0.2*sin(2*PI*440*t)*exp(-5*t)'"),
-        "filter": "lowpass=f=2000,afade=t=in:d=0.05,afade=t=out:st=0.6:d=0.6",
+        "aevalsrc": ("'0.5*sin(2*PI*440*t)*exp(-3*t)"
+                     "+0.4*sin(2*PI*660*t)*exp(-4*t)"
+                     "+0.3*sin(2*PI*880*t)*exp(-5*t)'"),
+        "filter": "lowpass=f=4000,afade=t=in:d=0.05,afade=t=out:st=0.6:d=0.6",
     },
     "sub_drop": {
-        "desc": "Sub bass drop (vine boom style)",
+        "desc": "Sub bass drop (vine boom style) with mid presence",
         "duration": 1.0,
-        "aevalsrc": "'0.8*sin(2*PI*(200-180*t)*t)*exp(-2*t)'",
-        "filter": "lowpass=f=150,afade=t=out:st=0.5:d=0.5",
+        "aevalsrc": "'0.8*sin(2*PI*(300-150*t)*t)*exp(-2*t)+0.3*sin(2*PI*(600-300*t)*t)*exp(-3*t)'",
+        "filter": "lowpass=f=600,afade=t=out:st=0.5:d=0.5",
+    },
+    "sharp_hit": {
+        "desc": "High frequency sharp impact",
+        "duration": 0.5,
+        "aevalsrc": "'0.8*(random(0)-0.5)*exp(-15*t)+0.5*sin(2*PI*1000*t)*exp(-20*t)'",
+        "filter": "highpass=f=500,afade=t=out:st=0.1:d=0.4",
     },
 
-    # ── Emotional SFX ─────────────────────────────────────────
+    # ── Emotional / Nature SFX ─────────────────────────────────────────
     "sad_tone": {
         "desc": "Melancholic single note",
         "duration": 2.5,
-        "aevalsrc": "'0.3*sin(2*PI*261.6*t)*exp(-0.8*t)+0.15*sin(2*PI*329.6*t)*exp(-1*t)'",
-        "filter": "lowpass=f=2000,afade=t=in:d=0.3,afade=t=out:st=1.5:d=1.0",
+        "aevalsrc": "'0.4*sin(2*PI*392.0*t)*exp(-0.8*t)+0.25*sin(2*PI*523.25*t)*exp(-1*t)'",
+        "filter": "lowpass=f=3000,afade=t=in:d=0.3,afade=t=out:st=1.5:d=1.0",
     },
     "tension_rise": {
         "desc": "Rising tension sweep",
         "duration": 2.0,
-        "aevalsrc": "'0.3*sin(2*PI*(100+400*t/2)*t)*exp(-0.5*t)'",
-        "filter": "bandpass=f=500:w=800,afade=t=in:d=0.2,afade=t=out:st=1.5:d=0.5",
+        "aevalsrc": "'0.4*sin(2*PI*(300+800*t/2)*t)*exp(-0.5*t)'",
+        "filter": "bandpass=f=1200:w=1000,afade=t=in:d=0.2,afade=t=out:st=1.5:d=0.5",
     },
     "heartbeat": {
-        "desc": "Rhythmic heartbeat thump",
+        "desc": "Rhythmic heartbeat thump with mid click",
         "duration": 3.0,
-        "aevalsrc": ("'0.5*sin(2*PI*50*t)*(exp(-15*mod(t,0.8))"
-                     "+0.7*exp(-15*max(0,mod(t,0.8)-0.15)))'"),
-        "filter": "lowpass=f=120,volume=1.5",
+        "aevalsrc": ("'0.6*sin(2*PI*80*t)*(exp(-15*mod(t,0.8))"
+                     "+0.7*exp(-15*max(0,mod(t,0.8)-0.15)))"
+                     "+0.2*(random(0)-0.5)*(exp(-30*mod(t,0.8)))'"),
+        "filter": "lowpass=f=600,volume=1.5",
+    },
+    "wind_howl": {
+        "desc": "Spooky nature wind howl",
+        "duration": 4.0,
+        "aevalsrc": "'0.3*(random(0)-0.5)*sin(2*PI*(300+100*sin(2*PI*0.5*t))*t)'",
+        "filter": "bandpass=f=800:w=400,afade=t=in:d=1.0,afade=t=out:st=2.5:d=1.5",
     },
 
     # ── Magic/Mystery SFX ─────────────────────────────────────
     "magic_chime": {
         "desc": "Magical shimmer chime",
         "duration": 1.5,
-        "aevalsrc": ("'0.2*sin(2*PI*880*t)*exp(-3*t)"
-                     "+0.15*sin(2*PI*1320*t)*exp(-4*t)"
-                     "+0.1*sin(2*PI*1760*t)*exp(-5*t)'"),
-        "filter": "aecho=0.6:0.3:50:0.3,highpass=f=400,afade=t=out:st=0.8:d=0.7",
+        "aevalsrc": ("'0.3*sin(2*PI*1760*t)*exp(-3*t)"
+                     "+0.2*sin(2*PI*2640*t)*exp(-4*t)"
+                     "+0.15*sin(2*PI*3520*t)*exp(-5*t)'"),
+        "filter": "aecho=0.6:0.3:50:0.3,highpass=f=800,afade=t=out:st=0.8:d=0.7",
     },
     "whisper_echo": {
         "desc": "Eerie whisper/wind effect",
         "duration": 2.0,
-        "aevalsrc": "'0.15*(random(0)-0.5)*sin(2*PI*200*t)*exp(-1*t)'",
-        "filter": "bandpass=f=800:w=600,aecho=0.8:0.7:100:0.5,afade=t=out:st=1.2:d=0.8",
+        "aevalsrc": "'0.25*(random(0)-0.5)*sin(2*PI*400*t)*exp(-1*t)'",
+        "filter": "bandpass=f=1200:w=800,aecho=0.8:0.7:100:0.5,afade=t=out:st=1.2:d=0.8",
+    },
+    "ethereal_choir": {
+        "desc": "Ethereal angelic choir tone",
+        "duration": 3.0,
+        "aevalsrc": "'0.2*sin(2*PI*523.25*t)*exp(-0.2*t)+0.2*sin(2*PI*659.25*t)*exp(-0.2*t)+0.2*sin(2*PI*783.99*t)*exp(-0.2*t)'",
+        "filter": "aecho=0.8:0.6:150:0.5,afade=t=in:d=0.5,afade=t=out:st=2.0:d=1.0",
     },
 
-    # ── Action/Combat SFX ─────────────────────────────────────
+    # ── Action/Combat/Nature SFX ─────────────────────────────────────
     "blade_clash": {
         "desc": "Metallic sword clash",
         "duration": 0.8,
-        "aevalsrc": "'0.4*sin(2*PI*(800+400*t)*t)*exp(-10*t)+0.2*random(0)*exp(-20*t)'",
-        "filter": "highpass=f=1000,aecho=0.8:0.5:20:0.3,afade=t=out:st=0.3:d=0.4",
+        "aevalsrc": "'0.5*sin(2*PI*(1200+600*t)*t)*exp(-10*t)+0.3*random(0)*exp(-20*t)'",
+        "filter": "highpass=f=1500,aecho=0.8:0.5:20:0.3,afade=t=out:st=0.3:d=0.4",
     },
     "magic_surge": {
         "desc": "Pulsing arcane energy surge",
         "duration": 2.0,
-        "aevalsrc": "'0.3*sin(2*PI*(100+500*sin(2*PI*2*t))*t)*exp(-0.5*t)'",
-        "filter": "aphaser=speed=2:decay=0.6,aecho=0.8:0.8:150:0.5,lowpass=f=3000,afade=t=out:st=1.0:d=1.0",
+        "aevalsrc": "'0.4*sin(2*PI*(200+800*sin(2*PI*2*t))*t)*exp(-0.5*t)'",
+        "filter": "aphaser=speed=2:decay=0.6,aecho=0.8:0.8:150:0.5,lowpass=f=4000,afade=t=out:st=1.0:d=1.0",
     },
 
     # ── Battle/Epic SFX ───────────────────────────────────────
     "thunder": {
         "desc": "Thunder crack",
         "duration": 2.0,
-        "aevalsrc": "'0.8*(random(0)-0.5)*exp(-3*t)+0.4*sin(2*PI*60*t)*exp(-1.5*t)'",
-        "filter": "lowpass=f=1000,afade=t=out:st=1.0:d=1.0",
+        "aevalsrc": "'0.9*(random(0)-0.5)*exp(-4*t)+0.5*sin(2*PI*120*t)*exp(-2*t)'",
+        "filter": "lowpass=f=2000,afade=t=out:st=1.0:d=1.0",
+    },
+    "distant_thunder": {
+        "desc": "Rumbling distant thunder",
+        "duration": 3.0,
+        "aevalsrc": "'0.5*(random(0)-0.5)*exp(-1.5*t)+0.4*sin(2*PI*80*t)*exp(-1*t)'",
+        "filter": "lowpass=f=400,afade=t=in:d=0.5,afade=t=out:st=1.5:d=1.5",
     },
     "sword_ring": {
         "desc": "Metallic sword ring",
         "duration": 1.0,
-        "aevalsrc": ("'0.4*sin(2*PI*2000*t)*exp(-8*t)"
-                     "+0.3*sin(2*PI*3000*t)*exp(-10*t)"
-                     "+0.2*sin(2*PI*4500*t)*exp(-12*t)'"),
-        "filter": "highpass=f=500,aecho=0.6:0.4:20:0.2,afade=t=out:st=0.4:d=0.6",
+        "aevalsrc": ("'0.5*sin(2*PI*3000*t)*exp(-8*t)"
+                     "+0.4*sin(2*PI*4500*t)*exp(-10*t)"
+                     "+0.3*sin(2*PI*6000*t)*exp(-12*t)'"),
+        "filter": "highpass=f=1000,aecho=0.6:0.4:20:0.2,afade=t=out:st=0.4:d=0.6",
     },
 
     # ── Surprise/Reveal SFX ───────────────────────────────────
@@ -160,20 +185,20 @@ SFX_RECIPES = {
     "ancient_seal": {
         "desc": "Resonant metallic seal activation",
         "duration": 2.0,
-        "aevalsrc": "'0.5*sin(2*PI*110*t)*exp(-1.5*t)+0.3*sin(2*PI*330*t)*exp(-3*t)'",
-        "filter": "aecho=0.8:0.7:100:0.5,lowpass=f=1200,afade=t=out:st=1.0:d=1.0",
+        "aevalsrc": "'0.5*sin(2*PI*440*t)*exp(-1.5*t)+0.3*sin(2*PI*880*t)*exp(-3*t)'",
+        "filter": "aecho=0.8:0.7:100:0.5,lowpass=f=3000,afade=t=out:st=1.0:d=1.0",
     },
     "demon_pulse": {
-        "desc": "Low demonic rumble pulse",
+        "desc": "Low demonic rumble pulse (mid-range for mobile)",
         "duration": 2.5,
-        "aevalsrc": "'0.6*sin(2*PI*40*t)*(1+0.4*sin(2*PI*8*t))*exp(-0.5*t)'",
-        "filter": "lowpass=f=150,vibrato=f=8:d=0.5,afade=t=out:st=1.5:d=1.0",
+        "aevalsrc": "'0.6*sin(2*PI*300*t)*(1+0.4*sin(2*PI*8*t))*exp(-0.5*t)'",
+        "filter": "lowpass=f=800,vibrato=f=8:d=0.5,afade=t=out:st=1.5:d=1.0",
     },
     "void_hum": {
         "desc": "Deep unsettling void ambience",
         "duration": 3.0,
-        "aevalsrc": "'0.2*random(0)*exp(-0.2*t)+0.1*sin(2*PI*60*t)'",
-        "filter": "bandpass=f=100:w=50,aecho=0.8:0.9:250:0.4,afade=t=in:d=0.5,afade=t=out:st=2.0:d=1.0",
+        "aevalsrc": "'0.2*random(0)*exp(-0.2*t)+0.1*sin(2*PI*400*t)'",
+        "filter": "bandpass=f=600:w=200,aecho=0.8:0.9:250:0.4,afade=t=in:d=0.5,afade=t=out:st=2.0:d=1.0",
     },
     "holy_radiance": {
         "desc": "Shimmering divine light",
@@ -185,13 +210,13 @@ SFX_RECIPES = {
 
 # Mood → which SFX to use for transitions and accents
 MOOD_SFX_MAP = {
-    "dark":      {"transition": "whoosh",      "accent": "demon_pulse"},
-    "sad":       {"transition": "whoosh_soft",  "accent": "void_hum"},
+    "dark":      {"transition": "whoosh",       "accent": "distant_thunder"},
+    "sad":       {"transition": "whoosh_soft",  "accent": "sad_tone"},
     "thrill":    {"transition": "whoosh",       "accent": "heartbeat"},
     "happy":     {"transition": "whoosh_soft",  "accent": "holy_radiance"},
-    "epic":      {"transition": "whoosh",       "accent": "ancient_seal"},
-    "surprise":  {"transition": "whoosh",       "accent": "reveal"},
-    "mystery":   {"transition": "whoosh_soft",  "accent": "magic_flare"},
+    "epic":      {"transition": "whoosh",       "accent": "thunder"},
+    "surprise":  {"transition": "whoosh",       "accent": "sharp_hit"},
+    "mystery":   {"transition": "whoosh_soft",  "accent": "wind_howl"},
     "neutral":   {"transition": "whoosh_soft",  "accent": "stinger"},
 }
 

@@ -67,7 +67,7 @@ def _start_kokoro_worker(runtime_python: Path, worker_script: Path) -> subproces
                 line_str = line.decode('utf-8').strip()
                 if line_str:
                     logger.debug(f"   [Kokoro Worker] {line_str}")
-            except:
+            except (UnicodeDecodeError, ValueError):
                 pass
     
     threading.Thread(target=log_stderr, args=(proc.stderr,), daemon=True).start()

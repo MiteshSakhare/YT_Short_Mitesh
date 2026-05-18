@@ -49,7 +49,7 @@ def process_script(script_path, part_num, total, i, state, output_dir, state_fil
             text=True,
             encoding="utf-8",
             errors="replace",
-            timeout=None,
+            timeout=1800,  # 30-minute timeout prevents zombie processes
             env=env,
             cwd=str(PROJECT_ROOT),
         )
@@ -74,6 +74,14 @@ def process_script(script_path, part_num, total, i, state, output_dir, state_fil
         
         return success
 
+    except subprocess.TimeoutExpired:
+        with state_lock:
+            print(f"{progress} ⏰ {script_name} (TIMEOUT after 30 min)")
+            if script_name not in state["failed"]:
+                state["failed"].append(script_name)
+            with open(state_file, "w") as f:
+                json.dump(state, f, indent=4)
+        return False
     except Exception as e:
         with state_lock:
             print(f"{progress} ❌ {script_name} ({str(e)[:40]})")

@@ -551,25 +551,41 @@ def generate_scene_backgrounds(
         generate_background("neutral", total_duration, output_path)
         return output_path
 
-    # ── Step 1: Group segments by mood ────────────────────────
+    # ── Step 1: Group segments by mood and explicit location ──────────
     groups: List[Dict] = []
     for seg in segments:
         mood = seg.get("mood", "neutral")
-        if groups and groups[-1]["mood"] == mood:
+        txt = seg.get("text", "").lower()
+        
+        # Detect explicit location trigger by exact phrase match
+        detected_loc = None
+        for loc_key in getattr(config, "LOCATION_KEYWORDS", {}).keys():
+            if loc_key.lower() in txt:
+                detected_loc = loc_key
+                break
+                
+        # Group if mood AND location match previous
+        if groups and groups[-1]["mood"] == mood and groups[-1].get("location") == detected_loc:
             groups[-1]["word_count"] += len(seg.get("text", "").split())
             groups[-1]["text"] += " " + seg.get("text", "")
         else:
             groups.append({
                 "mood":       mood,
-                "word_count": len(seg.get("text", "").split()),
+                "location":   detected_loc,
+                "word_count": len(seg.get("text", "").split()) or 1,
                 "text":       seg.get("text", ""),
             })
 
     # Collapse tiny groups (< 5% of total) into neighbours to avoid flash cuts
+    # UNLESS they have an explicit location trigger!
     total_words = sum(g["word_count"] for g in groups) or 1
     merged: List[Dict] = []
     for g in groups:
-        if g["word_count"] / total_words < 0.05 and merged:
+        is_tiny = (g["word_count"] / total_words) < 0.05
+        has_loc = g.get("location") is not None
+        
+        # Don't merge if it's the very first group (merged is empty)
+        if is_tiny and not has_loc and merged:
             merged[-1]["word_count"] += g["word_count"]
             merged[-1]["text"] += " " + g["text"]
         else:
@@ -600,6 +616,7 @@ def generate_scene_backgrounds(
                 chunk_text = " ".join(words[start_idx:end_idx])
                 split_groups.append({
                     "mood":       g["mood"],
+                    "location":   g.get("location"),
                     "word_count": len(chunk_text.split()) or 1,
                     "text":       chunk_text,
                 })
@@ -679,7 +696,7 @@ def generate_scene_backgrounds(
             continue
 
         if config.PEXELS_API_KEY:
-            quality_suffix = "4k hd cinematic scenery nobody"
+            quality_suffix = "wilderness cinematic 4k"
             
             def _clean_query(base: str, suffix: str) -> str:
                 suffix_words = suffix.split()
@@ -693,13 +710,22 @@ def generate_scene_backgrounds(
             ]
 
             location_candidates = []
-            for loc_key, loc_query in getattr(config, "LOCATION_KEYWORDS", {}).items():
-                if any(kw in txt for kw in loc_key.lower().split()):
+            if group.get("location"):
+                loc_key = group["location"]
+                loc_query = getattr(config, "LOCATION_KEYWORDS", {}).get(loc_key)
+                if loc_query:
                     location_candidates.append(_clean_query(loc_query, quality_suffix))
                     logger.info(f"   [{i+1}] 📍 Detected Location: {loc_key}")
+            else:
+                # Fallback: strictly check text
+                for loc_key, loc_query in getattr(config, "LOCATION_KEYWORDS", {}).items():
+                    if loc_key.lower() in txt:
+                        location_candidates.append(_clean_query(loc_query, quality_suffix))
+                        logger.info(f"   [{i+1}] 📍 Detected Location (fallback): {loc_key}")
+                        break
 
             if location_candidates:
-                candidates = location_candidates + candidates
+                candidates = location_candidates
 
             query = random.choice(candidates)
             
@@ -790,7 +816,12 @@ def _crossfade_concat(
     try:
         # Build xfade filter chain - using smooth transitions as requested
         # 'fade' is the most stable and smooth for cinematic backgrounds
-        dopamine_transitions = ["fade"]
+        dopamine_transitions = [
+            "fade",           # Classic dissolve
+            "fadeblack",      # Fade through black
+            "fadegrays",      # Fade through greys (cinematic)
+            "dissolve",       # Pixel dissolve
+        ]
         
         n = len(clip_paths)
         filter_parts = []

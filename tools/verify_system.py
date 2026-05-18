@@ -13,7 +13,7 @@ from src.verify_dependencies import verify_all_dependencies
 if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding='utf-8')
-    except:
+    except (AttributeError, OSError):
         pass
 
 print("\n" + "="*70)

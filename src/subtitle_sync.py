@@ -64,14 +64,14 @@ def detect_speech_segments(audio_file: str) -> List[Tuple[float, float]]:
                     time_str = line.split("silence_start:")[1].strip()
                     time = float(time_str)
                     silence_starts.append(time)
-                except:
+                except (ValueError, IndexError):
                     pass
             elif "silence_end:" in line:
                 try:
                     time_str = line.split("silence_end:")[1].strip().split()[0]
                     time = float(time_str)
                     silence_ends.append(time)
-                except:
+                except (ValueError, IndexError):
                     pass
         
         # Build speech segments from silence boundaries
