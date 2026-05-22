@@ -581,16 +581,16 @@ FILTER_BACKGROUND_CONTENT = True  # Enable content filtering for Pexels
 
 # ─────────────────────────────────────────────────────────────
 VIDEO_CODEC = "libx264"        # H.264 (universal YouTube compatibility)
-VIDEO_PRESET = "medium"        # 'medium' maximizes video quality
-VIDEO_CRF = 24                 # 24 = good balance of quality and size (reduced for upload speed)
+VIDEO_PRESET = "slow"          # 'slow' improves quality & compression
+VIDEO_CRF = 16                 # 16 = near lossless (prevents YouTube blurriness)
 AUDIO_CODEC = "aac"
 AUDIO_BITRATE = "192k"
 AUDIO_SAMPLE_RATE = "48000"
 USE_HWACCEL = False             # DISABLED for stability (HWACCEL often causes freezes on Windows)
-VIDEO_PROFILE = "main"         # H.264 profile (main = compatibility)
+VIDEO_PROFILE = "high"         # H.264 profile (high = better quality)
 VIDEO_LEVEL = "4.2"            # H.264 level (4.2 = YouTube compatible)
-MAXRATE = "5000k"              # Max bitrate for smooth playback
-BUFSIZE = "10000k"             # Buffer size for reducing bitrate jitter
+MAXRATE = "35000k"             # Max bitrate (raised to prevent compression artifacts)
+BUFSIZE = "70000k"             # Buffer size for high bitrates
 
 # ─────────────────────────────────────────────────────────────
 #  SCRIPT PARSING
