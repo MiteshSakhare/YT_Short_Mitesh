@@ -218,18 +218,18 @@ def apply_mood_shaping(audio_path: str, mood: str, output_path: str) -> str:
     Applies high-end cinematic EQ and vocal shaping based on segment mood.
     Ensures high-immersion through frequency balancing.
     """
-    # Base filter: Cinematic compression + high-quality normalization + presence
-    base_fx = "compand=attacks=0:points=-80/-80|-45/-35|-20/-15|0/-8:soft-knee=6:gain=-1,highpass=f=80,equalizer=f=200:t=h:w=200:g=1"
+    # Base filter: High-quality normalization + crystal clear presence
+    base_fx = "highpass=f=80,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2"
     
-    # Mood-specific modifiers for Cinematic Presence
+    # Mood-specific modifiers for Cinematic Presence (Keeping it ultra-smooth)
     mood_eq = {
-        "epic":    f"{base_fx},equalizer=f=120:t=q:w=1:g=6,equalizer=f=4000:t=q:w=1:g=4,aecho=0.8:0.88:40:0.4,highshelf=f=4000:g=2",
-        "dark":    f"{base_fx},equalizer=f=80:t=q:w=1:g=8,lowpass=f=3500,aecho=0.8:0.9:60:0.3",
-        "sad":     f"{base_fx},equalizer=f=400:t=q:w=1:g=-3,equalizer=f=3000:t=q:w=1:g=2,aecho=0.8:0.7:100:0.2",
-        "mysterious": f"{base_fx},bandpass=f=1200:w=2000,aecho=0.8:0.8:150:0.5",
-        "aggressive": f"{base_fx},equalizer=f=2500:t=q:w=1:g=5,equalizer=f=180:t=q:w=1:g=3,volume=1.3",
-        "thrill":  f"{base_fx},equalizer=f=3000:t=q:w=1:g=4,aecho=0.8:0.8:20:0.4,volume=1.1",
-        "neutral": f"{base_fx},equalizer=f=200:t=h:w=200:g=1.5"
+        "epic":    f"{base_fx},equalizer=f=120:t=q:w=1:g=2,aecho=0.8:0.88:40:0.1,highshelf=f=5000:g=2",
+        "dark":    f"{base_fx},equalizer=f=80:t=q:w=1:g=3,aecho=0.8:0.9:60:0.1",
+        "sad":     f"{base_fx},equalizer=f=400:t=q:w=1:g=-2,aecho=0.8:0.7:100:0.05",
+        "mysterious": f"{base_fx},aecho=0.8:0.8:150:0.2",
+        "aggressive": f"{base_fx},equalizer=f=2500:t=q:w=1:g=2,volume=1.1",
+        "thrill":  f"{base_fx},aecho=0.8:0.8:20:0.1,volume=1.05",
+        "neutral": f"{base_fx},equalizer=f=200:t=q:w=1:g=1"
     }
     
     filter_str = mood_eq.get(mood.lower(), base_fx)

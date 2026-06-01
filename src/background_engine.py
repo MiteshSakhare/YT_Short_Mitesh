@@ -818,9 +818,9 @@ def _crossfade_concat(
         # 'fade' is the most stable and smooth for cinematic backgrounds
         dopamine_transitions = [
             "fade",           # Classic dissolve
-            "fadeblack",      # Fade through black
-            "fadegrays",      # Fade through greys (cinematic)
-            "dissolve",       # Pixel dissolve
+            # "fadeblack",      # Fade through black
+            # "fadegrays",      # Fade through greys (cinematic)
+            # "dissolve",       # Pixel dissolve
         ]
         
         n = len(clip_paths)

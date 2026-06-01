@@ -1118,6 +1118,21 @@ def generate_subtitles(
         "_default":   ("&H0000FFFF", "&H00FFFFFF"),  # White → Cyan
     }
 
+    # -- Dynamic color assignment for any new characters --
+    import hashlib
+    DYNAMIC_PALETTE = [
+        "&H0000FFFF", "&H0000FF00", "&H00FF00FF", "&H0000A5FF", 
+        "&H00FF0000", "&H000000FF", "&H00FF80FF", "&H002080FF", 
+        "&H0040FF40", "&H00FFCC00", "&H0088FFCC", "&H000088FF", 
+        "&H000055EE", "&H00CC44CC", "&H00AAAAAA", "&H00FF44FF"
+    ]
+    unique_speakers = {cue.get("speaker", "narrator").lower() for cue in cues}
+    for speaker in unique_speakers:
+        if speaker not in CHAR_COLORS:
+            # Deterministic color choice based on character name
+            color_idx = int(hashlib.md5(speaker.encode()).hexdigest(), 16) % len(DYNAMIC_PALETTE)
+            CHAR_COLORS[speaker] = (DYNAMIC_PALETTE[color_idx], "&H00FFFFFF")
+
     BACK_COLOR = "&HAA000000"   # Semi-transparent dark box
     OUTLINE    = "&H00000000"   # Black outline
 

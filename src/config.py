@@ -37,7 +37,7 @@ CLEANUP_TEMP = True         # Auto-delete temp files after success
 
 # ── THUMBNAIL SETTINGS ──────────────────────────────────────
 THUMBNAIL_ENABLED = True
-THUMBNAIL_FONT_SIZE = 130
+THUMBNAIL_FONT_SIZE = 175       # Scaled up from 130 for 2K
 THUMBNAIL_ACCENT_COLOR = (255, 200, 0) # Gold
 THUMBNAIL_OUTLINE_WIDTH = 12
 THUMBNAIL_OVERLAY_OPACITY = 160        # 0-255
@@ -46,9 +46,9 @@ THUMBNAIL_OVERLAY_OPACITY = 160        # 0-255
 SHOW_CHANNEL_WATERMARK = True
 WATERMARK_IMAGE = ASSETS_DIR / "profile.png"  # 🔄 Updated to profile.png
 WATERMARK_OPACITY = 0.85
-WATERMARK_SCALE = 160         # Larger, more premium profile watermark
+WATERMARK_SCALE = 215         # Scaled up from 160 for 2K
 WATERMARK_POSITION = "top-left"
-WATERMARK_MARGIN = 40
+WATERMARK_MARGIN = 55          # Scaled up from 40 for 2K
 SHOW_PART_TAG = True           # Show "PART X" tag at top-right
 PART_TAG_DURATION = 5.0        # Stay on screen for 5s
 SHOW_CTA_OVERLAY = True        # Show "Follow for Part X+1" at end
@@ -63,11 +63,11 @@ LOG_FILE = LOGS_DIR / "generation.log" # Log output file
 LOG_LEVEL = "INFO"                        # CRITICAL, ERROR, WARNING, INFO, DEBUG
 
 # ─────────────────────────────────────────────────────────────
-#  VIDEO SETTINGS
+#  VIDEO SETTINGS (Upscaled to force YouTube's Premium Codec)
 # ─────────────────────────────────────────────────────────────
-VID_WIDTH = 1080              # YouTube Shorts width
-VID_HEIGHT = 1920             # YouTube Shorts height
-VID_FPS = 30                  # Frames per second (YouTube Shorts standard)
+VID_WIDTH = 1440              # 2K Resolution Width (Triggers VP9/AV1 codec)
+VID_HEIGHT = 2560             # 2K Resolution Height
+VID_FPS = 60                  # 60 FPS makes text animations fluid and raises YouTube's bitrate ceiling
 
 # Duration presets  ←  CHOOSE ONE
 DURATION_MODE = "unlimited"       # "unlimited" = full audio length (no hard cap)
@@ -115,7 +115,8 @@ TTS_SPEED = 1.1
 # ── EMOTIONAL VOX (Post-Processing) ──────────────────────────
 # Improves "presence" and emotional resonance of AI voices
 VOICE_COMPRESSION = True
-VOICE_COMPAND_STRENGTH = "attacks=0.02:decays=0.1:points=-60/-90|-15/-6:soft-knee=6:gain=-12" # Fixed syntax
+# Crystal Clear Broadcast Compression (Smooth & Clear)
+VOICE_COMPAND_STRENGTH = "attacks=0.01:decays=0.05:points=-80/-80|-20/-10|0/-3:soft-knee=4:gain=0" 
 
 # Local Kokoro-TTS voices (requires the Kokoro v1.0 voicepacks)
 # "am" = American Male, "af" = American Female, "bm" = British Male, etc.
@@ -221,38 +222,39 @@ CHARACTER_ALIASES = {
 # ─────────────────────────────────────────────────────────────
 #  CHARACTER-SPECIFIC AUDIO EFFECTS (FFmpeg filters)
 #  Each character gets unique spatial/tonal treatment
+#  Made Crystal Clear & Smooth for every character
 # ─────────────────────────────────────────────────────────────
 CHARACTER_AUDIO_FX_ENABLED = True
 
 CHARACTER_AUDIO_FX = {
-    "narrator":   "highpass=f=80,equalizer=f=200:t=h:w=200:g=1",
-    # Clean + warm — professional narration
+    "narrator":   "highpass=f=80,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2",
+    # Clean + warm — professional narration, crystal clear
 
-    "kaelen":     "highpass=f=60,equalizer=f=150:t=h:w=100:g=3,lowpass=f=5000",
-    # Bass boost + slightly muffled — brooding power
+    "kaelen":     "highpass=f=80,equalizer=f=120:t=q:w=1:g=2,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=5000:g=1",
+    # Deep steady power, but without muddiness
 
-    "seraphina":  "highpass=f=100,equalizer=f=3000:t=h:w=500:g=2",
+    "seraphina":  "highpass=f=100,equalizer=f=300:t=q:w=1:g=-2,highshelf=f=4500:g=3",
     # Bright + clear treble — elegant commanding
 
-    "rin":        "highpass=f=120,equalizer=f=2000:t=h:w=300:g=2",
-    # Energetic + crisp midrange
+    "rin":        "highpass=f=120,equalizer=f=350:t=q:w=1:g=-1,highshelf=f=4000:g=2",
+    # Energetic + crisp, smooth highs
 
-    "elara":      "highpass=f=80,equalizer=f=800:t=h:w=400:g=1",
-    # Warm + full — thoughtful
+    "elara":      "highpass=f=90,equalizer=f=250:t=q:w=1:g=1,highshelf=f=4000:g=2",
+    # Warm + full — thoughtful, rich presence
 
-    "malachar":   "highpass=f=50,equalizer=f=100:t=h:w=100:g=4,aecho=0.8:0.9:60:0.3",
-    # Heavy bass + echo — dark villain
+    "malachar":   "highpass=f=60,equalizer=f=120:t=q:w=1:g=2,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2,aecho=0.8:0.9:40:0.1",
+    # Heavy bass + mild echo — dark villain, clear top-end
 
-    "valerius":   "highpass=f=80,equalizer=f=1500:t=h:w=300:g=2,volume=1.1",
-    # Slightly louder + dominant midrange — arrogant
+    "valerius":   "highpass=f=80,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=4000:g=3,volume=1.05",
+    # Slightly louder + crisp presence
 
-    "aldric":     "highpass=f=70,equalizer=f=200:t=h:w=200:g=2",
-    # Strong low-mids — commanding king
+    "aldric":     "highpass=f=70,equalizer=f=150:t=q:w=1:g=1,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=4000:g=2",
+    # Strong low-mids — commanding king, very clear
 
-    "oracle":     "highpass=f=80,aecho=0.6:0.5:80:0.4,equalizer=f=4000:t=h:w=500:g=2",
-    # Ethereal echo + shimmer — mystical
+    "oracle":     "highpass=f=90,aecho=0.6:0.5:80:0.4,highshelf=f=5000:g=3",
+    # Ethereal echo + extremely bright shimmer — mystical
 
-    "_default":   "highpass=f=80",
+    "_default":   "highpass=f=80,equalizer=f=350:t=q:w=1:g=-1,highshelf=f=4000:g=2",
 }
 
 # ── TRANSITIONS & FADES ──────────────────────────────────────
@@ -266,10 +268,10 @@ SCENE_TRANSITION_DUR = 1.8     # Crossfade between background scenes
 WORDS_PER_CUE = 3               # 🚀 Punchy 3-word cues for maximum retention
 LETTER_SPC = 0                   # Letter spacing for subtitles (0 = normal, referenced by subtitle_sync)
 FONT_NAME = "Impact"           # Viral YouTube Shorts font
-FONT_SIZE = 92                  # Adjusted for 3 words per cue
-OUTLINE_WIDTH = 5               # Thick outline for contrast
-MARGIN_BOTTOM = 550              # Clear YouTube UI buttons
-SHADOW_DEPTH = 3                 # Shadow offset pixels
+FONT_SIZE = 122                 # Scaled up from 92 to match 2K canvas
+OUTLINE_WIDTH = 7               # Thickened from 5 for 2K
+MARGIN_BOTTOM = 730              # Raised from 550 to clear larger 2K UI elements
+SHADOW_DEPTH = 4                 # Increased from 3 for 2K
 SUBTITLE_GLOW = True             # Add glow effect behind text
 
 # ASS color format (AABBGGRR)
@@ -629,7 +631,7 @@ ADD_OUTRO = False                    # ❌ DISABLED — spoken outros destroy lo
 SHOW_CTA_OVERLAY = True              # ✅ Flash CTA text during the final seconds
 # CTA_TEXT is defined in WATERMARKING & BRANDING section above (line 56)
 CTA_DURATION = 5.0                   # seconds, shown at the very end (matches branding section)
-CTA_FONT_SIZE = 64                   # Centered and bold
+CTA_FONT_SIZE = 85                   # Scaled up from 64 for 2K
 CTA_COLOR = "&H0000FFFF"             # Yellow (ASS format)
 CTA_POSITION = "top"                 # center, bottom, top
 
