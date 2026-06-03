@@ -437,9 +437,9 @@ def _prepare_pexels_video(src: str, duration: float, out: str) -> bool:
     fps = config.VID_FPS
     vf = (
         f"{trim_filter},"
-        f"scale=w=1080:h=1920:force_original_aspect_ratio=increase,"
-        f"crop=1080:1920:x=(iw-ow)/2:y=(ih-oh)/2,"
-        f"zoompan=z='min(zoom+0.0005,1.5)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps={fps},"
+        f"scale=w={config.VID_WIDTH}:h={config.VID_HEIGHT}:force_original_aspect_ratio=increase,"
+        f"crop={config.VID_WIDTH}:{config.VID_HEIGHT}:x=(iw-ow)/2:y=(ih-oh)/2,"
+        f"zoompan=z='min(zoom+0.0005,1.5)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={config.VID_WIDTH}x{config.VID_HEIGHT}:fps={fps},"
         f"eq=brightness=-0.04:contrast=1.05:saturation=1.1,"
         f"vignette=PI/4,"
         f"fps={fps},"

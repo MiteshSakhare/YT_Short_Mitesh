@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+try:
+    import config
+except ImportError:
+    from . import config
+
 
 def get_audio_duration_accurate(audio_file: str) -> float:
     """Get accurate audio duration using ffprobe JSON output."""
@@ -192,6 +197,38 @@ def create_synced_subtitles(
     Returns: Path to ASS file
     """
     try:
+        # Define styles dynamically from config.CHARACTER_SUB_COLORS
+        CHAR_COLORS = {}
+        config_colors = getattr(config, "CHARACTER_SUB_COLORS", {})
+        default_unspoken = getattr(config, "SUBTITLE_WHITE", "&H00FFFFFF")
+
+        for char, hex_color in config_colors.items():
+            CHAR_COLORS[char] = (hex_color, default_unspoken)
+
+        import hashlib
+        DYNAMIC_PALETTE = [
+            "&H0000FFFF", "&H0000FF00", "&H00FF00FF", "&H0000A5FF", 
+            "&H00FF0000", "&H000000FF", "&H00FF80FF", "&H002080FF", 
+            "&H0040FF40", "&H00FFCC00", "&H0088FFCC", "&H000088FF", 
+            "&H000055EE", "&H00CC44CC", "&H00AAAAAA", "&H00FF44FF"
+        ]
+        unique_speakers = {seg.get("speaker", "narrator").lower() for seg in segments}
+        for speaker in unique_speakers:
+            if speaker not in CHAR_COLORS:
+                # Deterministic color choice based on character name
+                color_idx = int(hashlib.md5(speaker.encode()).hexdigest(), 16) % len(DYNAMIC_PALETTE)
+                CHAR_COLORS[speaker] = (DYNAMIC_PALETTE[color_idx], default_unspoken)
+
+        font_name = getattr(config, "FONT_NAME", "Arial Black")
+        font_size = getattr(config, "FONT_SIZE", 75)
+        outline_w = getattr(config, "OUTLINE_WIDTH", 4)
+        shadow_d = getattr(config, "SHADOW_DEPTH", 3)
+        margin_v = getattr(config, "MARGIN_BOTTOM", 550)
+        margin_h = 60
+        letter_spc = getattr(config, "LETTER_SPC", 0)
+        back_color = "&H99000000"
+        outline = "&H00000000"
+
         # ASS header
         ass_lines = [
             "[Script Info]",
@@ -204,14 +241,38 @@ def create_synced_subtitles(
             "",
             "[V4+ Styles]",
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-            "Style: Default,Arial Black,75,&H00FFFFFF,&H000000FF,&H00000000,&H99000000,-1,0,0,0,105,105,0,0,1,4,3,2,60,60,550,1",
-            "Style: Narrator,Arial Black,75,&H0000FFFF,&H000000FF,&H00000000,&H99000000,-1,0,0,0,105,105,0,0,1,4,3,2,60,60,550,1",
-            "Style: Intro,Impact,100,&H0000D7FF,&H000000FF,&H00000000,&H99000000,-1,0,0,0,110,110,0,0,1,8,6,5,40,40,500,1",
-            "Style: Outro,Impact,100,&H0000FFFF,&H000000FF,&H00000000,&H99000000,-1,0,0,0,110,110,0,0,1,8,6,5,40,40,500,1",
+        ]
+
+        def _make_style(name: str, primary: str, secondary: str, custom_font=None, custom_size=None, custom_outline=None, custom_shadow=None) -> str:
+            f_name = custom_font or font_name
+            f_size = custom_size or font_size
+            out_w = custom_outline or outline_w
+            sh_d = custom_shadow or shadow_d
+            return (
+                f"Style: {name},{f_name},{f_size},"
+                f"{primary},{secondary},"
+                f"{outline},{back_color},"
+                f"-1,0,0,0,105,105,{letter_spc},0,1,"  # Bold, ScaleX, ScaleY, BorderStyle=1
+                f"{out_w},{sh_d},2,{margin_h},{margin_h},{margin_v},1"
+            )
+
+        # Build default character styles
+        for char, (pri, sec) in CHAR_COLORS.items():
+            style_name = f"S_{char}" if char != "_default" else "Default"
+            ass_lines.append(_make_style(style_name, pri, sec))
+
+        # Add special Intro/Outro styles (using Impact font)
+        ass_lines.append(_make_style("Intro", "&H0000D7FF", "&H000000FF", custom_font="Impact", custom_size=100, custom_outline=8, custom_shadow=6))
+        ass_lines.append(_make_style("Outro", "&H0000FFFF", "&H000000FF", custom_font="Impact", custom_size=100, custom_outline=8, custom_shadow=6))
+
+        ass_lines += [
             "",
             "[Events]",
             "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
         ]
+
+        defined_styles = {f"S_{c}" if c != "_default" else "Default" for c in CHAR_COLORS}
+        defined_styles.update({"Intro", "Outro"})
 
         # Add subtitle events
         num_segments = len(segments)
@@ -231,7 +292,7 @@ def create_synced_subtitles(
             elif idx == num_segments - 1:
                 style = "Outro"
             else:
-                style = "Narrator" if speaker.lower() == "narrator" else "Default"
+                style = f"S_{speaker}" if f"S_{speaker}" in defined_styles else "Default"
 
             start_str = sec_to_ass(start_time)
             end_str = sec_to_ass(end_time)

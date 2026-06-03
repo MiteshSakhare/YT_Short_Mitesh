@@ -154,7 +154,7 @@ python tools/verify_system.py
 ### Maintenance & Cleanup
 ```bash
 # Wipe all generated files, logs, and caches (Fresh Start)
-powershell -Command "Remove-Item -Path '.cache', '.temp', 'logs', 'output' -Recurse -Force -ErrorAction SilentlyContinue; Get-ChildItem -Path . -Filter '__pycache__' -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
+powershell -Command "Remove-Item -Path '.cache', '.temp', '.code-review-graph', '.catch', 'logs', 'output' -Recurse -Force -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Path 'output' -Force | Out-Null; Remove-Item -Path 'sfx\*.wav' -Force -ErrorAction SilentlyContinue; Get-ChildItem -Path . -Filter '__pycache__' -Recurse -Directory -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
 
 # Check log file for errors
 Get-Content logs/generation.log -Wait
@@ -166,10 +166,10 @@ All settings are in [`src/config.py`](src/config.py). Key parameters:
 
 ```python
 # Video Output
-VID_FPS = 30                    # YouTube Shorts standard
-VID_WIDTH = 1080                # Shorts resolution
-VID_HEIGHT = 1920
-VIDEO_CRF = 14                  # Quality (lower = better, larger files)
+VID_FPS = 60                    # YouTube Shorts standard (fluid animations)
+VID_WIDTH = 1440                # 2K resolution width (triggers premium codec)
+VID_HEIGHT = 2560               # 2K resolution height
+VIDEO_CRF = 16                  # Visually lossless quality (prevents YouTube blurriness)
 
 # TTS
 USE_LOCAL_TTS = True            # Kokoro for emotional depth

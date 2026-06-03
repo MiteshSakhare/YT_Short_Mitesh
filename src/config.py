@@ -281,15 +281,28 @@ SUBTITLE_BLACK = "&H00000000"    # Black outline
 
 # Per-character subtitle highlight colors
 CHARACTER_SUB_COLORS = {
-    "narrator":   "&H00FFFFFF",   # White
+    "narrator":   "&H0000FFFF",   # Yellow (narrator active highlight)
     "kaelen":     "&H00FFCC99",   # Ice blue
     "seraphina":  "&H0000D4FF",   # Gold
     "rin":        "&H00FFFF00",   # Cyan
     "elara":      "&H00AAFFAA",   # Soft green
-    "oracle":  "&H00FF66FF",   # Purple
+    "oracle":     "&H00FF66FF",   # Purple
     "malachar":   "&H004444FF",   # Dark red
     "valerius":   "&H006699FF",   # Orange
     "aldric":     "&H0000CCFF",   # Amber
+    "duke":       "&H0000CCFF",   # Amber (Duke Arcturus)
+    "arcturus":   "&H0000CCFF",   # Amber (Arcturus)
+    "commander":  "&H0000CCFF",   # Amber (Commander)
+    "gaius":      "&H0088FFCC",   # Teal
+    "council":    "&H0088FFCC",   # Teal (Council)
+    "mara":       "&H00CCCCCC",   # Silver/Cold
+    "inquisitor": "&H00CCCCCC",   # Silver/Cold (Inquisitor)
+    "morwen":     "&H00CCCCCC",   # Silver/Cold (Morwen)
+    "guard":      "&H00AAAAAA",   # Grey
+    "herald":     "&H00AAAAAA",   # Grey (Herald)
+    "vex'ahlia":  "&H00CC44CC",   # Purple (Vex'ahlia)
+    "lyra":       "&H00AAFFAA",   # Soft green (Lyra)
+    "instructor": "&H006699FF",   # Orange (Instructor)
     "_default":   "&H0000FFFF",   # Yellow
 }
 

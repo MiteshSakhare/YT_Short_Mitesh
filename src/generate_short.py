@@ -230,7 +230,45 @@ def create_frame_perfect_subtitles(
         onset_frames = librosa.onset.onset_detect(onset_envelope=onset_env, backtrack=True)
         onset_times = librosa.frames_to_time(onset_frames, sr=sr)
         
-        # Build ASS file with detected speech boundaries
+        # Define styles dynamically from config.CHARACTER_SUB_COLORS
+        CHAR_COLORS = {}
+        config_colors = getattr(config, "CHARACTER_SUB_COLORS", {})
+        default_unspoken = getattr(config, "SUBTITLE_WHITE", "&H00FFFFFF")
+
+        for char, hex_color in config_colors.items():
+            CHAR_COLORS[char] = (hex_color, default_unspoken)
+
+        import hashlib
+        DYNAMIC_PALETTE = [
+            "&H0000FFFF", "&H0000FF00", "&H00FF00FF", "&H0000A5FF", 
+            "&H00FF0000", "&H000000FF", "&H00FF80FF", "&H002080FF", 
+            "&H0040FF40", "&H00FFCC00", "&H0088FFCC", "&H000088FF", 
+            "&H000055EE", "&H00CC44CC", "&H00AAAAAA", "&H00FF44FF"
+        ]
+        unique_speakers = {seg.get("speaker", "narrator").lower() for seg in segments}
+        for speaker in unique_speakers:
+            if speaker not in CHAR_COLORS:
+                # Deterministic color choice based on character name
+                color_idx = int(hashlib.md5(speaker.encode()).hexdigest(), 16) % len(DYNAMIC_PALETTE)
+                CHAR_COLORS[speaker] = (DYNAMIC_PALETTE[color_idx], default_unspoken)
+
+        font_size = getattr(config, "FONT_SIZE", 122)
+        outline_w = getattr(config, "OUTLINE_WIDTH", 7)
+        margin_v = getattr(config, "MARGIN_BOTTOM", 550)
+        margin_h = 50
+        letter_spc = getattr(config, "LETTER_SPC", 1.5)
+        back_color = "&HAA000000"
+        outline = "&H00000000"
+
+        def _make_style(name: str, primary: str, secondary: str) -> str:
+            return (
+                f"Style: {name},{getattr(config, 'FONT_NAME', 'Impact')},{font_size},"
+                f"{primary},{secondary},"
+                f"{outline},{back_color},"
+                f"-1,0,0,0,100,100,{letter_spc},0,3,"  # Bold, Spacing, BorderStyle=3
+                f"{outline_w},0,2,{margin_h},{margin_h},{margin_v},1"
+            )
+
         ass_lines = [
             "[Script Info]",
             "Title: The Twice-Crowned King",
@@ -238,12 +276,19 @@ def create_frame_perfect_subtitles(
             "",
             "[V4+ Styles]",
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-            "Style: Dialogue,Arial,60,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,10,10,550,1",
-            "Style: Narrator,Arial,56,&HFF00FF00,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,2,0,2,10,10,550,1",
+        ]
+        
+        for char, (pri, sec) in CHAR_COLORS.items():
+            style_name = f"S_{char}" if char != "_default" else "Default"
+            ass_lines.append(_make_style(style_name, pri, sec))
+
+        ass_lines += [
             "",
             "[Events]",
             "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
         ]
+        
+        defined_styles = {f"S_{c}" if c != "_default" else "Default" for c in CHAR_COLORS}
         
         # Map segments to detected onsets
         ass_events = []
@@ -263,7 +308,7 @@ def create_frame_perfect_subtitles(
             aligned_end = min(video_duration, aligned_start + duration)
             
             # Select style
-            style = "Narrator" if character == "narrator" else "Dialogue"
+            style = f"S_{character}" if f"S_{character}" in defined_styles else "Default"
             
             ass_events.append({
                 "start": aligned_start,
@@ -1016,7 +1061,7 @@ def generate_subtitles(
     """
     WORDS_PER_CUE = config.WORDS_PER_CUE         # Punchy and fast, keeps pace with audio
     FONT_SIZE     = config.FONT_SIZE             # Sized properly for the word count
-    MARGIN_V      = 550       # 🚀 High margin to avoid YouTube UI buttons
+    MARGIN_V      = getattr(config, "MARGIN_BOTTOM", 550)       # 🚀 High margin to avoid YouTube UI buttons
     MARGIN_H      = 50        # horizontal margin so text doesn't stretch full width
     OUTLINE_W     = config.OUTLINE_WIDTH
     LETTER_SPC    = 1.5       # px letter spacing
@@ -1097,26 +1142,13 @@ def generate_subtitles(
         "Alignment, MarginL, MarginR, MarginV, Encoding",
     ]
 
-    # Character → (primary_colour_spoken, karaoke_secondary_colour_unspoken)
-    # Primary is what \kf TURNS INTO. Secondary is what it STARTS AS.
-    # ASS colours: &HAABBGGRR  (alpha, blue, green, red in hex)
-    CHAR_COLORS = {
-        "narrator":   ("&H0000FFFF", "&H00FFFFFF"),  # White → Cyan
-        "kaelen":     ("&H002080FF", "&H00FFFFFF"),  # White → Amber
-        "seraphina":  ("&H0040FF40", "&H00FFFFFF"),  # White → Green
-        "rin":        ("&H00FF80FF", "&H00FFFFFF"),  # White → Pink
-        "malachar":   ("&H000040FF", "&H00FFFFFF"),  # White → Red
-        "elara":      ("&H00FFCC00", "&H00FFFFFF"),  # White → Blue
-        "vex'ahlia":  ("&H00CC44CC", "&H00FFFFFF"),  # White → Purple
-        "aldric":     ("&H000088FF", "&H00FFFFFF"),  # White → Gold
-        "duke":       ("&H000088FF", "&H00FFFFFF"),  # White → Gold (Duke)
-        "valerius":   ("&H000055EE", "&H00FFFFFF"),  # White → Coral
-        "gaius":      ("&H0088FFCC", "&H00FFFFFF"),  # White → Teal
-        "oracle":     ("&H00FF44FF", "&H00FFFFFF"),  # White → Magenta
-        "mara":       ("&H00CCCCCC", "&H00FFFFFF"),  # White → Silver/Cold
-        "guard":      ("&H00AAAAAA", "&H00FFFFFF"),  # White → Grey
-        "_default":   ("&H0000FFFF", "&H00FFFFFF"),  # White → Cyan
-    }
+    # Load character subtitle colors from config if available, with fallbacks
+    CHAR_COLORS = {}
+    config_colors = getattr(config, "CHARACTER_SUB_COLORS", {})
+    default_unspoken = getattr(config, "SUBTITLE_WHITE", "&H00FFFFFF")
+
+    for char, hex_color in config_colors.items():
+        CHAR_COLORS[char] = (hex_color, default_unspoken)
 
     # -- Dynamic color assignment for any new characters --
     import hashlib
@@ -1131,7 +1163,7 @@ def generate_subtitles(
         if speaker not in CHAR_COLORS:
             # Deterministic color choice based on character name
             color_idx = int(hashlib.md5(speaker.encode()).hexdigest(), 16) % len(DYNAMIC_PALETTE)
-            CHAR_COLORS[speaker] = (DYNAMIC_PALETTE[color_idx], "&H00FFFFFF")
+            CHAR_COLORS[speaker] = (DYNAMIC_PALETTE[color_idx], default_unspoken)
 
     BACK_COLOR = "&HAA000000"   # Semi-transparent dark box
     OUTLINE    = "&H00000000"   # Black outline
@@ -1147,7 +1179,9 @@ def generate_subtitles(
 
     for char, (pri, sec) in CHAR_COLORS.items():
         style_name = f"S_{char}" if char != "_default" else "Default"
-        lines.append(_make_style(style_name, pri, sec))
+        # We make the default base text color White (default_unspoken) so that unspoken words are White,
+        # and we highlight the active word using the override color tag in dialogue events.
+        lines.append(_make_style(style_name, default_unspoken, default_unspoken))
 
     lines += [
         "",
@@ -1158,45 +1192,50 @@ def generate_subtitles(
     # Track which styles were defined
     defined_styles = {f"S_{c}" if c != "_default" else "Default" for c in CHAR_COLORS}
 
-    # ── Dialogue events ───────────────────────────────────────
+    # ── Dialogue events (Active-Word-Highlight Karaoke Style) ─────────────────
     for cue in cues:
-        parts = []
         words = cue["words"]
-        for i, w in enumerate(words):
-            # Calculate duration to the START of the next word, or the end of the cue
-            if i < len(words) - 1:
-                next_start = words[i+1]["start"]
-                dur = next_start - w["start"]
-            else:
-                dur = w["end"] - w["start"]
-            
-            dur_cs = max(1, int(dur * 100))
-            word   = (w["word"]
-                      .replace("{", "").replace("}", "")
-                      .replace("\\", "").replace("\n", " ")
-                      .replace("/n", " ").replace("/N", " "))
-            
-            # Final sweep for any remaining emojis before subtitle rendering
-            word = re.sub(r'[\U0001f300-\U0001f650\U0001f680-\U0001f6A0\U0001f900-\U0001f9FF\u2600-\u26FF\u2700-\u27BF]', '', word)
-            
-            # Since ASS V4+ Karaoke \kf changes from SecondaryColour to PrimaryColour:
-            # We want it to be White (unspoken) and turn Cyan (spoken).
-            # So the style is Primary=Cyan, Secondary=White.
-            # \kf smoothly transitions them.
-            # Avoid using \fscx animations here as they affect all remaining text on the line,
-            # causing severe stutter/jitter.
-            pop_tag = f"{{\\kf{dur_cs}}}"
-            parts.append(pop_tag + word)
-
-        text    = " ".join(parts)
         speaker = cue.get("speaker", "narrator")
-
         style_key = f"S_{speaker}" if f"S_{speaker}" in defined_styles else "Default"
 
-        lines.append(
-            f"Dialogue: 0,{sec_to_ass(cue['start'])},{sec_to_ass(cue['end'])},"
-            f"{style_key},,0,0,0,,{text}"
-        )
+        # Get highlight color for this speaker (first value in CHAR_COLORS tuple)
+        highlight_color = CHAR_COLORS.get(speaker, CHAR_COLORS.get("_default", ("&H0000FFFF", default_unspoken)))[0]
+        color_tag = highlight_color if highlight_color.endswith('&') else f"{highlight_color}&"
+
+        num_words = len(words)
+        for i in range(num_words):
+            # Calculate start and end times for this word's highlight line
+            if i == 0:
+                line_start = cue["start"]
+            else:
+                line_start = words[i]["start"]
+
+            if i == num_words - 1:
+                line_end = cue["end"]
+            else:
+                line_end = words[i+1]["start"]
+
+            if line_end <= line_start:
+                line_end = line_start + 0.05
+
+            parts = []
+            for j, w in enumerate(words):
+                word = (w["word"]
+                          .replace("{", "").replace("}", "")
+                          .replace("\\", "").replace("\n", " ")
+                          .replace("/n", " ").replace("/N", " "))
+                word = re.sub(r'[\U0001f300-\U0001f650\U0001f680-\U0001f6A0\U0001f900-\U0001f9FF\u2600-\u26FF\u2700-\u27BF]', '', word)
+                
+                if j == i:
+                    parts.append(f"{{\\c{color_tag}}}{word}{{\\r}}")
+                else:
+                    parts.append(word)
+
+            text = " ".join(parts)
+            lines.append(
+                f"Dialogue: 0,{sec_to_ass(line_start)},{sec_to_ass(line_end)},"
+                f"{style_key},,0,0,0,,{text}"
+            )
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
