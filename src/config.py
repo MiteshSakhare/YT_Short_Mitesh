@@ -31,7 +31,7 @@ LOGS_DIR = BASE_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 # ── BATCH & PERFORMANCE ──────────────────────────────────────
-MAX_THREADS = 1            # Number of parallel video generations (Sequential for stability)
+MAX_THREADS = 4            # Number of parallel video generations (Sequential for stability)
 TTS_CACHE_ENABLED = True    # Skip redundant TTS generation
 CLEANUP_TEMP = True         # Auto-delete temp files after success
 
