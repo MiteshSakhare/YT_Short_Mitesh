@@ -833,6 +833,7 @@ def _crossfade_concat(
                 f"[{i}:v]scale={config.VID_WIDTH}:{config.VID_HEIGHT}:force_original_aspect_ratio=increase,"
                 f"crop={config.VID_WIDTH}:{config.VID_HEIGHT},"
                 f"fps={fps},"
+                f"settb=1/{fps},"
                 f"setsar=1/1,"
                 f"format=yuv420p[v_norm_{i}]"
             )
@@ -890,7 +891,7 @@ def _crossfade_concat(
             logger.info(f"✅ Scene backgrounds stitched with crossfade ({n} clips)")
             return output_path
 
-        logger.warning(f"xfade concat failed — using robust re-encoded hard-cut fallback.")
+        logger.warning(f"xfade concat failed — using robust re-encoded hard-cut fallback.\nFFmpeg Error:\n{r.stderr}")
     except Exception as e:
         logger.warning(f"xfade transition error: {e}. Falling back to hard-cut.")
     
