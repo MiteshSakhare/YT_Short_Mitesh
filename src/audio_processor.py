@@ -49,7 +49,7 @@ def apply_character_fx(
     # This makes the voice sound more present and professional
     if getattr(config, 'VOICE_COMPRESSION', False):
         compand_val = getattr(config, 'VOICE_COMPAND_STRENGTH', "0.02,0.1 6:-60,-90,-15,-6 -12 -90 0.1")
-        fx_chain = f"compand={compand_val},{fx_chain}"
+        fx_chain = f"{fx_chain},compand={compand_val}"
 
     cmd = [
         "ffmpeg", "-y", "-i", input_audio,

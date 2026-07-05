@@ -265,7 +265,7 @@ def create_frame_perfect_subtitles(
                 f"Style: {name},{getattr(config, 'FONT_NAME', 'Impact')},{font_size},"
                 f"{primary},{secondary},"
                 f"{outline},{back_color},"
-                f"-1,0,0,0,100,100,{letter_spc},0,3,"  # Bold, Spacing, BorderStyle=3
+                f"-1,0,0,0,100,100,{letter_spc},0,1,"  # Bold, Spacing, BorderStyle=1 (outline, shows character colors)
                 f"{outline_w},0,2,{margin_h},{margin_h},{margin_v},1"
             )
 
@@ -2033,10 +2033,15 @@ def generate_video_metadata(part_num: int, hook_text: str, segments: list, outpu
         hashtags.extend(mood_tags.get(mood.lower(), ["#reincarnation", "#demonking"]))
 
         # Rotating engagement hashtags (cycle based on part number)
+        # 7 groups = one unique set per day of the week, avoids YouTube "hashtag fatigue"
         engagement_tags = [
-            ["#fyp", "#viral", "#mustwatch"],
-            ["#foryoupage", "#audiobook", "#webtoon"],
-            ["#animestory", "#isekai", "#viral"],
+            ["#fyp", "#viral", "#mustwatch", "#booktok"],
+            ["#foryoupage", "#audiobook", "#webtoon", "#isekai"],
+            ["#animestory", "#isekai", "#viral", "#manhwa"],
+            ["#fyp", "#booktok", "#darkacademy", "#reincarnation"],
+            ["#foryoupage", "#manhwa", "#demonking", "#mustwatch"],
+            ["#viral", "#webtoon", "#sololeveling", "#animestory"],
+            ["#fyp", "#isekai", "#booktok", "#epicfantasy"],
         ]
         hashtags.extend(engagement_tags[part_num % len(engagement_tags)])
 

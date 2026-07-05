@@ -116,7 +116,8 @@ TTS_SPEED = 1.1
 # Improves "presence" and emotional resonance of AI voices
 VOICE_COMPRESSION = True
 # Crystal Clear Broadcast Compression (Smooth & Clear)
-VOICE_COMPAND_STRENGTH = "attacks=0.01:decays=0.05:points=-80/-80|-20/-10|0/-3:soft-knee=4:gain=0" 
+# Slower attack/decay prevents audible pumping on fast dialogue, soft-knee=6 for smoother transitions
+VOICE_COMPAND_STRENGTH = "attacks=0.02:decays=0.15:points=-80/-80|-25/-15|-5/-3|0/-1:soft-knee=6:gain=0"
 
 # Local Kokoro-TTS voices (requires the Kokoro v1.0 voicepacks)
 # "am" = American Male, "af" = American Female, "bm" = British Male, etc.
@@ -227,34 +228,34 @@ CHARACTER_ALIASES = {
 CHARACTER_AUDIO_FX_ENABLED = True
 
 CHARACTER_AUDIO_FX = {
-    "narrator":   "highpass=f=80,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2",
-    # Clean + warm — professional narration, crystal clear
+    "narrator":   "highpass=f=80,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2,loudnorm=I=-14:TP=-1.5",
+    # Clean + warm — professional narration, crystal clear + normalized volume
 
-    "kaelen":     "highpass=f=80,equalizer=f=120:t=q:w=1:g=2,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=5000:g=1",
+    "kaelen":     "highpass=f=80,equalizer=f=120:t=q:w=1:g=2,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=5000:g=1,loudnorm=I=-14:TP=-1.5",
     # Deep steady power, but without muddiness
 
-    "seraphina":  "highpass=f=100,equalizer=f=300:t=q:w=1:g=-2,highshelf=f=4500:g=3",
+    "seraphina":  "highpass=f=100,equalizer=f=300:t=q:w=1:g=-2,highshelf=f=4500:g=3,loudnorm=I=-14:TP=-1.5",
     # Bright + clear treble — elegant commanding
 
-    "rin":        "highpass=f=120,equalizer=f=350:t=q:w=1:g=-1,highshelf=f=4000:g=2",
+    "rin":        "highpass=f=120,equalizer=f=350:t=q:w=1:g=-1,highshelf=f=4000:g=2,loudnorm=I=-14:TP=-1.5",
     # Energetic + crisp, smooth highs
 
-    "elara":      "highpass=f=90,equalizer=f=250:t=q:w=1:g=1,highshelf=f=4000:g=2",
+    "elara":      "highpass=f=90,equalizer=f=250:t=q:w=1:g=1,highshelf=f=4000:g=2,loudnorm=I=-14:TP=-1.5",
     # Warm + full — thoughtful, rich presence
 
-    "malachar":   "highpass=f=60,equalizer=f=120:t=q:w=1:g=2,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2,aecho=0.8:0.9:40:0.1",
-    # Heavy bass + mild echo — dark villain, clear top-end
+    "malachar":   "highpass=f=60,equalizer=f=120:t=q:w=1:g=2,equalizer=f=350:t=q:w=1:g=-2,highshelf=f=4000:g=2,loudnorm=I=-14:TP=-1.5",
+    # Heavy bass — dark villain, clear top-end (removed aecho — sounds muddy on mobile speakers)
 
-    "valerius":   "highpass=f=80,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=4000:g=3,volume=1.05",
+    "valerius":   "highpass=f=80,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=4000:g=3,volume=1.05,loudnorm=I=-14:TP=-1.5",
     # Slightly louder + crisp presence
 
-    "aldric":     "highpass=f=70,equalizer=f=150:t=q:w=1:g=1,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=4000:g=2",
+    "aldric":     "highpass=f=70,equalizer=f=150:t=q:w=1:g=1,equalizer=f=400:t=q:w=1:g=-2,highshelf=f=4000:g=2,loudnorm=I=-14:TP=-1.5",
     # Strong low-mids — commanding king, very clear
 
-    "oracle":     "highpass=f=90,aecho=0.6:0.5:80:0.4,highshelf=f=5000:g=3",
-    # Ethereal echo + extremely bright shimmer — mystical
+    "oracle":     "highpass=f=90,aecho=0.6:0.5:60:0.25,highshelf=f=5000:g=3,loudnorm=I=-14:TP=-1.5",
+    # Ethereal echo (reduced delay 80→60ms for mobile clarity) + bright shimmer — mystical
 
-    "_default":   "highpass=f=80,equalizer=f=350:t=q:w=1:g=-1,highshelf=f=4000:g=2",
+    "_default":   "highpass=f=80,equalizer=f=350:t=q:w=1:g=-1,highshelf=f=4000:g=2,loudnorm=I=-14:TP=-1.5",
 }
 
 # ── TRANSITIONS & FADES ──────────────────────────────────────
@@ -434,8 +435,8 @@ HOOK_DURATION = 3.0              # Seconds
 # ─────────────────────────────────────────────────────────────
 #  LOOP BRIDGE (2026 Algorithm Hack)
 # ─────────────────────────────────────────────────────────────
-ADD_LOOP_BRIDGE = False             # ❌ DISABLED — Removes the confusing sound echo at the end
-LOOP_BRIDGE_DURATION = 3.5        # Increased to capture "Hey everyone! Welcome back..."
+ADD_LOOP_BRIDGE = True              # ✅ RE-ENABLED — Softer loop bridge triggers rewatch algorithm boost
+LOOP_BRIDGE_DURATION = 1.5        # Shortened to 1.5s for subtle loop (not confusing)
 
 # ─────────────────────────────────────────────────────────────
 #  2026 UPGRADE FEATURES (Critical Improvements)
@@ -624,9 +625,9 @@ SAID_VERBS = [
 # ─────────────────────────────────────────────────────────────
 STORY_TITLE = "The Twice-Crowned King"
 STORY_HASHTAGS = (
-    "#shorts #fantasy #reincarnation #darkfantasy #storyshorts "
-    "#demonking #academyfantasy #storytime #animestory #webtoon "
-    "#fyp #foryoupage #viral #thetwicecrownedking"
+    "#shorts #fantasy #darkfantasy #reincarnation #isekai "
+    "#demonking #storytime #booktok #manhwa #animestory "
+    "#fyp #foryoupage #viral #thetwicecrownedking #webtoon"
 )
 
 # ─────────────────────────────────────────────────────────────

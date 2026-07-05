@@ -166,7 +166,7 @@ All settings are in [`src/config.py`](src/config.py). Key parameters:
 
 ```python
 # Video Output
-VID_FPS = 60                    # YouTube Shorts standard (fluid animations)
+VID_FPS = 60                    # 60 FPS for fluid subtitle animations
 VID_WIDTH = 1440                # 2K resolution width (triggers premium codec)
 VID_HEIGHT = 2560               # 2K resolution height
 VIDEO_CRF = 16                  # Visually lossless quality (prevents YouTube blurriness)
@@ -178,6 +178,7 @@ TTS_SPEED = 1.1                 # Pacing for retention
 # Audio Mixing
 SFX_VOLUME = 0.30               # Ambient SFX (won't overpower voice)
 MUSIC_VOLUME = 0.10             # Background music level
+VOICE_COMPRESSION = True        # Broadcast-quality voice compression
 
 # Duration
 DURATION_MODE = "unlimited"     # Full audio length (max 180s)
@@ -187,7 +188,10 @@ SHOW_CHANNEL_WATERMARK = True
 SHOW_CTA_OVERLAY = True
 SHOW_PART_TAG = True
 CTA_TEXT = "Like & Subscribe for Part {next_part}!"
-# Progress bar has been removed to rely on YouTube's native UI
+
+# Loop Bridge (Algorithm Hack)
+ADD_LOOP_BRIDGE = True          # Echoes opening audio at end → triggers replays
+LOOP_BRIDGE_DURATION = 1.5      # Subtle 1.5s bridge
 
 # Subtitles
 WORDS_PER_CUE = 3              # Punchy karaoke style
@@ -202,14 +206,18 @@ LETTER_SPC = 0                 # Letter spacing (0 = normal)
 | **Emotional TTS** | ✅ | Multi-character voice swapping with mood-based prosody (Kokoro-ONNX) |
 | **Psychology Engine** | ✅ | Auto-selects highest-tension hook from story middle |
 | **Dynamic Metadata** | ✅ | Unique per-part titles + descriptions with mood-specific hashtags |
+| **Rotating Hashtags** | ✅ | 7 hashtag pools rotate per part — avoids YouTube tag fatigue |
+| **Character-Colored Subs** | ✅ | Each character gets a unique subtitle color (ice blue, gold, red, etc.) |
+| **Per-Voice Loudnorm** | ✅ | Every character FX chain normalizes to -14 LUFS (YouTube standard) |
+| **Mobile-Clear Audio** | ✅ | No echo effects on character voices (except Oracle) — clean on phone speakers |
 | **Nature-Aware SFX** | ✅ | Mobile-optimized high frequency sound effects placed on timeline |
 | **Voice-Safe Mixing** | ✅ | amix filter with voice pre-boost prevents 1/N volume attenuation |
 | **Frame-Perfect Subs** | ✅ | librosa onset detection for word-level synchronization |
-| **Loop Bridge** | ✅ | Echo opening audio at end → triggers replays (15-25% boost) |
+| **Loop Bridge** | ✅ | Subtle 1.5s loop bridge at end → triggers replays (15-25% boost) |
 | **Cinematic Transitions**| ✅ | Smooth crossfades, fade-to-black, and dissolves instead of wipes |
 | **Nature Backgrounds** | ✅ | Majestic weather and nature-themed keyword whitelist |
 | **Visual Branding** | ✅ | Persistent watermark + CTA overlay + Part tag (no spoken intros) |
-| **3-Digit Naming** | ✅ | Consistent `part_001`–`part_192` folder/file naming |
+| **3-Digit Naming** | ✅ | Consistent `part_001`–`part_191` folder/file naming |
 | **Batch Safety** | ✅ | 30-min subprocess timeout + state.json resume support |
 | **Artifact Removal** | ✅ | Automatically cleans "End of Part X" artifacts during parsing |
 
@@ -231,9 +239,10 @@ The pipeline is optimized for YouTube Shorts discoverability:
 | Factor | Implementation |
 |---|---|
 | **Hook (0-3s)** | Psychology engine picks highest-intensity sentence from story mid-point |
-| **Retention** | Karaoke subtitles + cinematic nature visuals + 30 FPS smooth playback |
-| **Re-watches** | Loop bridge + cliffhanger endings |
-| **Metadata** | Mood emoji titles + rotating hashtags + unique descriptions per part |
+| **Retention** | Karaoke subtitles + character-colored text + cinematic nature visuals + 60 FPS |
+| **Re-watches** | Loop bridge (1.5s) + cliffhanger endings |
+| **Metadata** | Mood emoji titles + 7-pool rotating hashtags + US-targeted tags (#booktok #isekai) |
+| **Audio Quality** | Per-character loudnorm (-14 LUFS) + mobile-optimized FX (no echo artifacts) |
 | **File Size** | Optimized encoding (~10-20 MB per Short) |
 
 ## 📦 Dependencies
@@ -244,9 +253,31 @@ The pipeline is optimized for YouTube Shorts discoverability:
 - **Pexels API Key**: Background video footage (set in `.env`)
 - **Ollama** (optional): Local LLM for hook rewriting
 
-## 📋 Changelog (v2.1 — The "Nature & Polish" Update)
+## 📋 Changelog
 
-### Pipeline Updates
+### v2.2 — The "Audio Clarity & US Reach" Update
+
+#### Audio Improvements
+- **Per-Character Loudnorm**: Added `loudnorm=I=-14:TP=-1.5` to all 9 character FX chains for consistent volume across speakers.
+- **Mobile-Clear Audio**: Removed `aecho` from all character FX (except Oracle) — echo sounds muddy on phone speakers.
+- **Compand Order Fix**: Voice compression now applies AFTER EQ chain (was before, causing artifact amplification).
+- **Smoother Compression**: Updated `VOICE_COMPAND_STRENGTH` with slower attack/decay (0.02/0.15) and wider soft-knee (6) to prevent audible pumping.
+- **Oracle Echo Tuning**: Reduced echo delay from 80ms→60ms and decay from 0.4→0.25 for mobile clarity while preserving mystical feel.
+
+#### Subtitle Improvements
+- **Character-Colored Subtitles**: Fixed `BorderStyle=3`→`1` so per-character subtitle colors (ice blue for Kaelen, gold for Seraphina, dark red for Malachar, etc.) are now visible instead of hidden behind an opaque box.
+
+#### Metadata & SEO
+- **Rotating Hashtags**: Expanded from 3 to 7 hashtag pools — each part gets a unique tag set, avoiding YouTube's tag fatigue penalty.
+- **US-Targeted Tags**: Added `#booktok`, `#isekai`, `#manhwa`, `#sololeveling`, `#darkacademy` for US/UK audience discovery.
+- **Updated Core Hashtags**: Replaced low-volume tags (`#storyshorts`, `#academyfantasy`) with high-traffic alternatives.
+
+#### Algorithm Optimization
+- **Loop Bridge Re-enabled**: Reduced from 3.5s→1.5s for subtle replay triggering without confusing viewers.
+
+### v2.1 — The "Nature & Polish" Update
+
+#### Pipeline Updates
 - **Visual Aesthetic**: Transitioned to 100% nature and weather-themed backgrounds.
 - **Cinematic Transitions**: Removed jarring wipe effects in favor of smooth crossfades and dissolve.
 - **Narrative Re-Splitting**: Improved `split_story.py` to prevent "End of Part X" artifacts from polluting the script.
@@ -254,9 +285,8 @@ The pipeline is optimized for YouTube Shorts discoverability:
 - **Progress Bar Removal**: Deprecated the custom red line to rely on YouTube's native progress bar for a cleaner look.
 
 ### Previous Bug Fixes
-- **FPS**: Reduced from 60 → 30 (YouTube Shorts standard, ~50% smaller files)
 - **SFX Volume**: Reduced from 0.65 → 0.30 (no longer overpowers narration)
-- **3-Digit Naming**: All paths use `:03d` format (`part_001` not `part_01`) — supports 192 parts
+- **3-Digit Naming**: All paths use `:03d` format (`part_001` not `part_01`) — supports 191 parts
 - **Hook Newline Leak**: `\n` in hook text no longer leaks into video titles
 - **Bare Except Blocks**: All 12 bare `except:` replaced with specific exception types
 - **amix Voice Drop**: Voice pre-boosted by N× before amix to prevent 1/N attenuation
